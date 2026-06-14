@@ -1,0 +1,71 @@
+
+
+<Stack class="max-w-[780px]">
+  <Stack class="mb-12">
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2 transition-colors duration-300">Core Blocks</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">OmniJS replaces every HTML element with 6 universal building blocks. The compiler determines the correct semantic HTML output automatically.</Text>
+  </Stack>
+
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0 }">
+    <Stack class="flex items-center gap-3 mb-4">
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#7b5cff]/10 text-[var(--color-accent-purple)]">&lt;Stack&gt;</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">The foundation of all layout. A Stack automatically compiles to semantic elements based on its depth in the component tree — main at the root, section at depth 2, and div for deeper nesting.</Text>
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">main · section · div · nav · header · footer</Text>
+  </Stack>
+
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.1 }">
+    <Stack class="flex items-center gap-3 mb-4">
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#00c2ff]/10 text-[var(--color-accent-blue)]">&lt;Text&gt;</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Renders text content with automatic heading hierarchy. The first Text becomes h1, the next h2, and so on down to h6, after which it falls back to paragraph tags.</Text>
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">h1 · h2 · h3 · h4 · h5 · h6 · p · span · li</Text>
+  </Stack>
+
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.2 }">
+    <Stack class="flex items-center gap-3 mb-4">
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#ff2d7b]/10 text-[var(--color-accent-pink)]">&lt;Action&gt;</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Interactive elements. The output tag is determined by the attributes you provide — an anchor for href, a button for click handlers or navigation, and input for data binding.</Text>
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">button · a · input · textarea</Text>
+  </Stack>
+
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.3 }">
+    <Stack class="flex items-center gap-3 mb-4">
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#ff9f43]/10 text-[var(--color-accent-orange)]">&lt;Collection&gt;</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Iterates over data arrays to produce semantically correct, highly optimized list structures. Supports unordered lists, ordered lists, and complex table matrices. Use type="ol" for ordered lists.</Text>
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">ul · ol · table · tr · td</Text>
+  </Stack>
+
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.4 }">
+    <Stack class="flex items-center gap-3 mb-4">
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#00d68f]/10 text-[var(--color-accent-green)]">&lt;Media&gt;</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Handles all multimedia content intelligently. It automatically outputs the correct native tag based on the provided file extension or explicit type attribute.</Text>
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">img · video · audio · iframe</Text>
+  </Stack>
+
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.5 }">
+    <Stack class="flex items-center gap-3 mb-4">
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#ff2d7b]/10 text-[var(--color-accent-pink)]">&lt;Form&gt;</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">A context-aware form builder. The top level acts as a form wrapper, while nested Form tags compile into appropriate form controls depending on the type attribute (inputs, textareas, selects, or labels).</Text>
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">form · input · textarea · select · label</Text>
+  </Stack>
+
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.6 }">
+    <Stack class="flex items-center gap-3 mb-4">
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#7b5cff]/10 text-[var(--color-accent-purple)]">&lt;Use&gt;</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">The component inclusion and instantiation block. Use it to import external OmniJS files and register them as custom tags that can accept props.</Text>
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">Custom Components</Text>
+  </Stack>
+</Stack>

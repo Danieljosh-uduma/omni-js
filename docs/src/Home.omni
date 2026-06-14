@@ -1,0 +1,58 @@
+
+
+<Stack class="max-w-[780px]">
+  <Stack class="mb-16">
+    <Text class="font-mono text-xs font-semibold text-[var(--color-accent-pink)] tracking-widest uppercase mb-4">Introducing OmniJS</Text>
+    <Text class="font-heading text-5xl sm:text-6xl font-extrabold text-zinc-900 dark:text-white tracking-tight leading-[1.08] mb-5 transition-colors duration-300">
+      Build interfaces with 
+      <Text class="bg-gradient-to-br from-[var(--color-accent-pink)] via-[var(--color-accent-purple)] to-[var(--color-accent-blue)] bg-clip-text text-transparent">6 blocks.</Text>
+    </Text>
+    <Text class="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 max-w-[560px] leading-[1.7] transition-colors duration-300">
+      OmniJS replaces traditional HTML with a radical abstraction layer. A zero-build dev runtime and an AOT production compiler — one syntax, infinite scale.
+    </Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-4 mb-2 transition-colors duration-300">Quick Start (Scaffold a New App)</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-sm mb-4 leading-relaxed transition-colors duration-300">
+    Spawn a fresh project with Tailwind v4, dev servers, compilers, and a reactive counter layout pre-configured:
+  </Text>
+  
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 font-mono text-[0.82rem] leading-relaxed text-zinc-700 dark:text-zinc-300 my-4 transition-all duration-300">
+    <Text class="text-zinc-500 mb-1"># 1. Create a new OmniJS project</Text>
+    <Text class="text-[var(--color-accent-pink)] font-semibold mb-3">npx omni create my-app</Text>
+    
+    <Text class="text-zinc-500 mb-1"># 2. Navigate and install packages</Text>
+    <Text class="text-[var(--color-accent-blue)] font-semibold mb-3">cd my-app && npm install</Text>
+    
+    <Text class="text-zinc-500 mb-1"># 3. Boot up the hot-reloading dev server</Text>
+    <Text class="text-[var(--color-accent-orange)] font-semibold">npm run dev</Text>
+  </Stack>
+
+  <Stack class="flex gap-4 mb-12">
+    <Action class="px-6 py-3 bg-[var(--color-accent-pink)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/tutorial/1">Start Tutorial</Action>
+    <Action class="px-6 py-3 bg-white dark:bg-white/5 text-zinc-900 dark:text-white border border-black/10 dark:border-white/10 rounded-lg text-sm font-bold hover:bg-black/5 dark:hover:bg-white/10 transition-colors" navigate-to="/blocks">Explore Deep Dives</Action>
+  </Stack>
+
+  <Stack class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <Stack class="feature-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0 }">
+      <Text class="text-2xl mb-3">⚡</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Zero-Build Dev Mode</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">Include the 10kb runtime and start coding. No webpack, no vite, no config. Just save and refresh.</Text>
+    </Stack>
+    <Stack class="feature-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.15 }">
+      <Text class="text-2xl mb-3">📦</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">AOT Production Compiler</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">One CLI command compiles, tree-shakes, and minifies your entire application into a deployment-ready bundle.</Text>
+    </Stack>
+    <Stack class="feature-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.3 }">
+      <Text class="text-2xl mb-3">🧭</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Built-In Router</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">Navigate between pages with a single attribute. No libraries. No config files. It just works.</Text>
+    </Stack>
+    <Stack class="feature-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.45 }">
+      <Text class="text-2xl mb-3">✨</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Native GSAP Animations</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">Attach rich entrance animations declaratively. The framework handles the lifecycle automatically.</Text>
+    </Stack>
+  </Stack>
+</Stack>

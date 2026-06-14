@@ -1,0 +1,49 @@
+<Stack class="max-w-[780px]">
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Framework Feature</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Styling & CSS</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">OmniJS supports traditional styling through `&lt;style&gt;` blocks, inline styles, and full compatibility with utility-first frameworks like Tailwind CSS.</Text>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">The `class` Attribute</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Every OmniJS block supports the standard `class` attribute. You can use global classes or utility frameworks directly on the tags.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">&lt;!-- Tailwind CSS Example --&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;Stack class="flex items-center justify-between p-4 bg-gray-100 rounded-lg"&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">  &lt;Text class="text-lg font-bold text-gray-800"&gt;Tailwind in OmniJS&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;/Stack&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Component Scoped `&lt;style&gt;` Blocks</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">You can add a `&lt;style&gt;` block anywhere in your `.omni` file. The compiler extracts it and efficiently injects it into the document head.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-orange)]">&lt;style&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  .my-custom-card {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    background: linear-gradient(to right, #ff0055, #00c2ff);</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    border-radius: 12px;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    padding: 2rem;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  }</Text>
+    <Text class="text-[var(--color-accent-orange)]">&lt;/style&gt;</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;Stack class="my-custom-card"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Styled with CSS&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;/Stack&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Dynamic Inline Styles</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">You can use standard inline styles, and even bind them to reactive state for dynamic styling changes.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">&lt;!-- Static inline style --&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;Text style="color: red; font-size: 20px;"&gt;Warning&lt;/Text&gt;</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-zinc-500">&lt;!-- Dynamic inline style based on state (not implemented yet, coming soon!) --&gt;</Text>
+    <Text class="text-zinc-500">&lt;!-- &lt;Stack bind-style="?dynamicStyle"&gt;...&lt;/Stack&gt; --&gt;</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/7">&larr; Previous</Action>
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/animation">Next: Animations &rarr;</Action>
+  </Stack>
+
+  </Stack>

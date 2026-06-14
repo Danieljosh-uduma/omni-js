@@ -1,0 +1,17 @@
+{
+  "name": "@omni/runtime",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --outfile=dist/omni-runtime.js --format=esm"
+  },
+  "dependencies": {
+    "acorn": "^8.17.0",
+    "acorn-walk": "^8.3.5",
+    "gsap": "^3.12.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  }
+}

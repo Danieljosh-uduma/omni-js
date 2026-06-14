@@ -1,0 +1,37 @@
+<Stack class="max-w-[780px]">
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Framework Feature</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Built-In Router</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">OmniJS routing is fully abstracted. No imports needed. No config files. Two attributes handle everything.</Text>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">navigate-to — Link to a Page</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Attach to any Action. When clicked, it updates the URL hash and the router signal — no page reload.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action navigate-to="/"&gt;Home&lt;/Action&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action navigate-to="/docs"&gt;Docs&lt;/Action&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action navigate-to="/about"&gt;About&lt;/Action&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">route — Declare a View</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Attach to any Stack. It will only be visible when the current URL hash matches the route value.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-pink)]">&lt;Stack route="/"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Home content&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Stack&gt;</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-[var(--color-accent-green)]">&lt;Stack route="/docs"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Documentation content&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-green)]">&lt;/Stack&gt;</Text>
+  </Stack>
+
+  <Stack class="border-l-4 border-[var(--color-accent-blue)] bg-[#00c2ff]/10 p-4 rounded-r-xl my-6">
+    <Text class="text-zinc-700 dark:text-zinc-300 text-[0.88rem] leading-relaxed">The router uses hash-based URLs (e.g. yoursite.com/#/about). This means it works seamlessly on any static file server without server-side URL rewriting rules. Browser back/forward buttons are fully supported natively.</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/5">&larr; Previous</Action>
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/7">Next: Components &rarr;</Action>
+  </Stack>
+
+  </Stack>

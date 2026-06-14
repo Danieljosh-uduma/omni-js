@@ -1,0 +1,62 @@
+<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Text Block</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The `Text` block handles all typography. Instead of manually specifying `h1` through `h6`, `p`, or `span`, the Text block infers its tag based on nesting depth and layout context.</Text>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">The renderer tracks the number of `Text` elements nested within each other or contextually inside headers. The first `Text` element in a tree becomes an `h1`, the next an `h2`, and anything beyond `h6` falls back to a standard `p` paragraph tag. Inside tables, it renders as `td` or `th`.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">
+    <Text class="text-[var(--color-accent-pink)]">&lt;Text&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  Title (Renders as &lt;h1&gt;)</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Text&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    Subtitle (Renders as &lt;h2&gt;)</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Text&gt;</Text>
+  </Stack>
+
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">
+      <Text style="white-space: pre-wrap;">&lt;h1 class="text-2xl font-bold"&gt;My Website&lt;/h1&gt;
+&lt;h2&gt;About Us&lt;/h2&gt;
+&lt;p&gt;We build cool things.&lt;/p&gt;
+&lt;span&gt;Inline text&lt;/span&gt;</Text>
+    </Stack>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">type</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
+          <Text type="td" class="px-4 py-3">Override the automatic depth tag (e.g. `type="span"` or `type="th"`).</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">bind-text</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">State Signal</Text>
+          <Text type="td" class="px-4 py-3">Reactively bind the element's textContent to a state variable.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">{?stateVar}</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Syntax</Text>
+          <Text type="td" class="px-4 py-3">Inline string interpolation. Evaluated reactively (e.g. `Hello {?name}`).</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/stack">&larr; Previous</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/action">Next &rarr;</Action>
+  </Stack>
+</Stack>

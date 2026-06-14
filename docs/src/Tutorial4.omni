@@ -1,0 +1,63 @@
+<Stack class="max-w-[780px]">
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-orange)] mb-2">Core Block 4 of 4</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">&lt;Collection&gt; — Lists & Data</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">Collection handles repetitive data rendering. It wraps its children in a semantically correct list structure, ideal for navigation menus, feeds, tables, and any repeating UI pattern.</Text>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Automatic List Item Mapping</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">When you nest a &lt;Text&gt; block directly inside a &lt;Collection&gt;, the framework automatically compiles the &lt;Text&gt; as an &lt;li&gt; tag instead of a heading, ensuring valid HTML structure.</Text>
+
+  <Stack class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">OmniJS Input</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-orange)]">&lt;Collection&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Apples&lt;/Text&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Bananas&lt;/Text&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Cherries&lt;/Text&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-orange)]">&lt;/Collection&gt;</Text>
+    </Stack>
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">HTML Output</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;ul&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;li&gt;Apples&lt;/li&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;li&gt;Bananas&lt;/li&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;li&gt;Cherries&lt;/li&gt;</Text>
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;/ul&gt;</Text>
+    </Stack>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Custom Collection Types</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">By default, Collection compiles to a `ul` tag. You can specify `type="ol"` to produce an ordered list instead.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-orange)]">&lt;Collection type="ol" class="list-decimal pl-5"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;First step&lt;/Text&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Second step&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-orange)]">&lt;/Collection&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Data Tables</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Setting `type="table"` transforms the Collection into a semantic HTML table. Nested Collections handle `thead`, `tbody`, and `tr` elements. A `<Text>` inside a `tr` automatically becomes a `<td>` or `<th>`.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-orange)]">&lt;Collection type="table" class="w-full text-left"&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Collection type="thead"&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">    &lt;Collection type="tr"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text type="th"&gt;Name&lt;/Text&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text type="th"&gt;Status&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">    &lt;/Collection&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Collection&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Collection type="tbody"&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">    &lt;Collection type="tr"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text&gt;OmniJS&lt;/Text&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text&gt;Active&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">    &lt;/Collection&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Collection&gt;</Text>
+    <Text class="text-[var(--color-accent-orange)]">&lt;/Collection&gt;</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/form">&larr; Previous</Action>
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/5">Next: Reactivity &rarr;</Action>
+  </Stack>
+
+  </Stack>

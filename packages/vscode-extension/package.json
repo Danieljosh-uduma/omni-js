@@ -1,0 +1,26 @@
+{
+  "name": "omni-js-syntax",
+  "displayName": "OmniJS",
+  "description": "Syntax highlighting for OmniJS (.omni) files.",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "omni",
+        "extensions": [".omni"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "omni",
+        "scopeName": "text.html.omni",
+        "path": "./syntaxes/omni.tmLanguage.json"
+      }
+    ]
+  }
+}

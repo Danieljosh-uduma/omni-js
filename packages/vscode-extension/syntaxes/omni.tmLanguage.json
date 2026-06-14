@@ -1,0 +1,79 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OmniJS",
+  "scopeName": "text.html.omni",
+  "patterns": [
+    {
+      "begin": "(<)(script)(?=\\s|>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.script.html" }
+      },
+      "end": "(</)(script)(>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.script.html" },
+        "3": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
+        {
+          "match": "\\b(state)\\s+(\\?[a-zA-Z0-9_]+)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.state.omni" },
+            "2": { "name": "variable.other.readwrite.omni" }
+          }
+        },
+        {
+          "match": "\\?[a-zA-Z0-9_]+",
+          "name": "variable.other.readwrite.omni"
+        },
+        {
+          "include": "source.js"
+        }
+      ]
+    },
+    {
+      "begin": "(<)(style)(?=\\s|>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.style.html" }
+      },
+      "end": "(</)(style)(>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.style.html" },
+        "3": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
+        {
+          "include": "source.css"
+        }
+      ]
+    },
+    {
+      "begin": "\\{",
+      "end": "\\}",
+      "name": "meta.embedded.expression.omni",
+      "patterns": [
+        {
+          "match": "\\?[a-zA-Z0-9_]+",
+          "name": "variable.other.readwrite.omni"
+        },
+        {
+          "include": "source.js"
+        }
+      ]
+    },
+    {
+      "match": "\\b(bind-|on-|animate-|navigate-to)\\b",
+      "name": "entity.other.attribute-name.omni"
+    },
+    {
+      "match": "\\b(Stack|Text|Action|Collection|Form|Media|Use)\\b",
+      "name": "entity.name.tag.custom.omni"
+    },
+    {
+      "include": "text.html.basic"
+    }
+  ]
+}

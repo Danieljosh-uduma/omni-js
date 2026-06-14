@@ -1,0 +1,13 @@
+{
+  "name": "@omni/cli",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "bin": {
+    "omni": "bin/omni.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "esbuild": "^0.20.0",
+    "@omni/runtime": "*"
+  }
+}
