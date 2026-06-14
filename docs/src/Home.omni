@@ -19,7 +19,7 @@
   
   <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 font-mono text-[0.82rem] leading-relaxed text-zinc-700 dark:text-zinc-300 my-4 transition-all duration-300">
     <Text class="text-zinc-500 mb-1"># 1. Create a new OmniJS project</Text>
-    <Text class="text-[var(--color-accent-pink)] font-semibold mb-3">npx omni create my-app</Text>
+    <Text class="text-[var(--color-accent-pink)] font-semibold mb-3">npx @omni/cli create my-app</Text>
     
     <Text class="text-zinc-500 mb-1"># 2. Navigate and install packages</Text>
     <Text class="text-[var(--color-accent-blue)] font-semibold mb-3">cd my-app && npm install</Text>
