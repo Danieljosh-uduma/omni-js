@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "./**/*.omni";
 
 @theme {
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

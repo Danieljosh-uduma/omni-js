@@ -1,166 +1,1847 @@
-var Gt=null;function se(l){let t=new Set;function e(r){return r&&typeof r=="object"?new Proxy(r,{get(n,s,o){Gt&&t.add(Gt);let u=Reflect.get(n,s,o);return u&&typeof u=="object"?e(u):u},set(n,s,o,u){return Reflect.get(n,s,u)!==o&&(Reflect.set(n,s,o,u),t.forEach(c=>c())),!0}}):r}let i=e(l);return{get value(){return Gt&&t.add(Gt),i},set value(r){i!==r&&(i=e(r),t.forEach(n=>n()))}}}function yt(l){let t=()=>{Gt=t;try{l()}finally{Gt=null}};t()}var Di=!1,Rt=null;function zi(){if(Di)return Rt;let l=()=>window.location.hash.slice(1)||"/";return Rt=se(l()),window.addEventListener("hashchange",()=>{Rt.value=l(),window.scrollTo({top:0,behavior:"instant"})}),Di=!0,Rt}function Ei(l){Rt||zi(),window.location.hash=l,window.scrollTo({top:0,behavior:"instant"})}function Ri(){return Rt||zi(),Rt}function Vr(l){let t=l;return t=t.replace(/navigate::to=/g,"navigate-to="),t=t.replace(/bind::([a-zA-Z0-9_-]+)=/g,"bind-$1="),t=t.replace(/on::([a-zA-Z0-9_-]+)=/g,"on-$1="),t=t.replace(/animate::([a-zA-Z0-9_-]+)=/g,"animate-$1="),t=t.replace(/if::condition=/g,"if-condition="),t=t.replace(/src::logic=/g,"src-logic="),t=t.replace(/src::style=/g,"src-style="),t}async function Fi(l,t,e){let i=Vr(l.templateSource),n=new DOMParser().parseFromString(i,"text/html"),s=Array.from(n.body.childNodes);for(let o of s){let u=await Le(o,t,{stackDepth:0,textDepth:1},l.components||[]);u&&e.appendChild(u)}}async function Le(l,t,e,i){if(l.nodeType===Node.TEXT_NODE){let a=l.textContent;if(!a.trim())return null;if(a.includes("{")&&a.includes("}")){let c=document.createElement("span");return yt(()=>{let h=a.replace(/\{[?]?([a-zA-Z0-9_.]+)\}/g,(_,d)=>{let m=d.split("."),f=t;for(let p of m)if(f&&typeof f=="object")if(p in f)f=f[p],f&&typeof f=="object"&&"value"in f&&Object.keys(f).length<=2&&(f=f.value);else return _;else return _;return f!==void 0?f:_});c.textContent=h}),c}return document.createTextNode(a)}if(l.nodeType!==Node.ELEMENT_NODE)return null;let r=l.tagName.toLowerCase(),n=i.find(a=>a.name.toLowerCase()===r);if(n){let a=document.createElement("div");a.className=`omni-component-${r}`;let c={};Array.from(l.attributes).forEach(h=>{let _=h.value;if(_.includes("{")&&_.includes("}")&&(_=_.replace(/\{[?]?([a-zA-Z0-9_.]+)\}/g,(d,m)=>{let f=m.split("."),p=t;for(let g of f)if(p&&typeof p=="object")if(g in p)p=p[g],p&&typeof p=="object"&&"value"in p&&Object.keys(p).length<=2&&(p=p.value);else return d;else return d;return p!==void 0?p:d})),h.name.startsWith("on-")){let d=h.name.replace("on-","");c[`on${d.charAt(0).toUpperCase()+d.slice(1)}`]=t[h.value]}else c[h.name]=_});try{let _=await(await fetch(n.src)).text();window.__omni_mount&&await window.__omni_mount(_,a,c)}catch(h){console.error(`[OmniJS] Failed to load component <${n.name}>`,h)}return a}let s,o={...e};if(r==="stack")o.stackDepth++,o.stackDepth===1?s=document.createElement("main"):o.stackDepth===2?s=document.createElement("section"):s=document.createElement("div");else if(r==="text")if(e.collectionType==="tr"){let a=l.getAttribute("type");s=document.createElement(a==="th"?"th":"td")}else e.inCollection&&(e.collectionType==="ul"||e.collectionType==="ol"||!e.collectionType)?s=document.createElement("li"):o.textDepth<=6?(s=document.createElement(`h${o.textDepth}`),o.textDepth++):s=document.createElement("p");else if(r==="action"){let a=l.getAttribute("as");a==="link"||!a&&l.hasAttribute("href")?(s=document.createElement("a"),l.hasAttribute("href")&&(s.href=l.getAttribute("href"))):a==="submit"?(s=document.createElement("button"),s.type="submit"):l.hasAttribute("navigate-to")?(s=document.createElement("button"),s.setAttribute("role","link")):s=document.createElement("button")}else if(r==="collection"){let a=l.getAttribute("type")||"ul";a==="table"?s=document.createElement("table"):a==="thead"?s=document.createElement("thead"):a==="tbody"?s=document.createElement("tbody"):a==="tr"?s=document.createElement("tr"):a==="ol"?s=document.createElement("ol"):s=document.createElement("ul"),o.inCollection=!0,o.collectionType=a}else if(r==="media"){let a=l.getAttribute("src")||"",c=l.getAttribute("type");c==="video"||a.endsWith(".mp4")||a.endsWith(".webm")?s=document.createElement("video"):c==="audio"||a.endsWith(".mp3")||a.endsWith(".wav")?s=document.createElement("audio"):c==="iframe"||a.includes("youtube.com")||a.includes("vimeo.com")?s=document.createElement("iframe"):s=document.createElement("img")}else if(r==="form"){let a=l.hasAttribute("bind-value")||l.hasAttribute("placeholder")||l.hasAttribute("type");if(!o.inForm&&!a)s=document.createElement("form"),o.inForm=!0;else{let c=l.getAttribute("type")||"text";c==="textarea"?s=document.createElement("textarea"):c==="select"?s=document.createElement("select"):c==="label"?s=document.createElement("label"):(s=document.createElement("input"),s.type=c)}}else s=document.createElement(l.tagName);let u=null;if(l.hasAttribute("route")&&(u=l.getAttribute("route")),Array.from(l.attributes).forEach(a=>{let c=a.name,h=a.value;if(c!=="route"){if(c==="navigate-to"){s.addEventListener("click",_=>{_.preventDefault(),Ei(h)});return}if(c.startsWith("bind-")){let _=c.replace("bind-",""),m=h.replace("?","").split("."),f=m[0];t[f]&&(yt(()=>{let p=t[f].value;for(let g=1;g<m.length;g++)p&&typeof p=="object"&&(p=p[m[g]]);_==="text"?s.textContent=p:_==="value"?s.value!==p&&(s.value=p):s.setAttribute(_,p)}),_==="value"&&s.addEventListener("input",p=>{if(m.length===1)t[f].value=p.target.value;else{let g=t[f].value;for(let x=1;x<m.length-1;x++)g=g[m[x]];g[m[m.length-1]]=p.target.value}}));return}if(c.startsWith("on-")){let _=c.replace("on-","");t[h]&&s.addEventListener(_,t[h]);return}if(c.startsWith("animate-")){if(c.replace("animate-","")==="load"&&typeof gsap<"u"&&h.startsWith("from:"))try{let d=h.replace("from:","").trim(),m=new Function(`return ${d}`)();gsap.from(s,m)}catch{}return}c!=="if-condition"&&s.setAttribute(c,h)}}),r==="collection"&&l.hasAttribute("data")&&l.hasAttribute("as")){let a=l.getAttribute("data").replace("?",""),c=l.getAttribute("as");if(t[a]){let h=Array.from(l.childNodes);yt(()=>{s.innerHTML="",(t[a].value||[]).forEach(async d=>{let m={...t,[c]:d};for(let f of h){let p=f.cloneNode(!0),g=await Le(p,m,o,i);g&&s.appendChild(g)}})})}}else for(let a of Array.from(l.childNodes)){let c=await Le(a,t,o,i);c&&s.appendChild(c)}if(u!==null){let a=Ri();s.style.display="none",yt(()=>{let c=a.value,h=u===c||u==="/"&&(c==="/"||c==="");s.style.display=h?"":"none"})}return s}function gt(l){if(l===void 0)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return l}function Xi(l,t){l.prototype=Object.create(t.prototype),l.prototype.constructor=l,l.__proto__=t}var et={autoSleep:120,force3D:"auto",nullTargetWarn:1,units:{lineHeight:""}},fe={duration:.5,overwrite:!1,delay:0},ei,q,D,ut=1e8,O=1/ut,qe=Math.PI*2,Yr=qe/4,Wr=0,qi=Math.sqrt,Xr=Math.cos,qr=Math.sin,W=function(t){return typeof t=="string"},L=function(t){return typeof t=="function"},vt=function(t){return typeof t=="number"},Oe=function(t){return typeof t>"u"},dt=function(t){return typeof t=="object"},tt=function(t){return t!==!1},ii=function(){return typeof window<"u"},be=function(t){return L(t)||W(t)},Gi=typeof ArrayBuffer=="function"&&ArrayBuffer.isView||function(){},Q=Array.isArray,Gr=/random\([^)]+\)/g,jr=/,\s*/g,Bi=/(?:-?\.?\d|\.)+/gi,ri=/[-+=.]*\d+[.e\-+]*\d*[e\-+]*\d*/g,Nt=/[-+=.]*\d+[.e-]*\d*[a-z%]*/g,Ne=/[-+=.]*\d+\.?\d*(?:e-|e\+)?\d*/gi,ni=/[+-]=-?[.\d]+/,Qr=/[^,'"\[\]\s]+/gi,$r=/^[+\-=e\s\d]*\d+[.\d]*([a-z]*|%)\s*$/i,E,ft,Ge,si,nt={},Te={},ji,Qi=function(t){return(Te=Qt(t,nt))&&$},Me=function(t,e){return console.warn("Invalid property",t,"set to",e,"Missing plugin? gsap.registerPlugin()")},he=function(t,e){return!e&&console.warn(t)},$i=function(t,e){return t&&(nt[t]=e)&&Te&&(Te[t]=e)||nt},de=function(){return 0},Hr={suppressEvents:!0,isStart:!0,kill:!1},ke={suppressEvents:!0,kill:!1},Zr={suppressEvents:!0},oi={},Tt=[],je={},Hi,K={},Ie={},Li=30,ye=[],ai="",li=function(t){var e=t[0],i,r;if(dt(e)||L(e)||(t=[t]),!(i=(e._gsap||{}).harness)){for(r=ye.length;r--&&!ye[r].targetTest(e););i=ye[r]}for(r=t.length;r--;)t[r]&&(t[r]._gsap||(t[r]._gsap=new hi(t[r],i)))||t.splice(r,1);return t},St=function(t){return t._gsap||li(ct(t))[0]._gsap},ui=function(t,e,i){return(i=t[e])&&L(i)?t[e]():Oe(i)&&t.getAttribute&&t.getAttribute(e)||i},H=function(t,e){return(t=t.split(",")).forEach(e)||t},N=function(t){return Math.round(t*1e5)/1e5||0},z=function(t){return Math.round(t*1e7)/1e7||0},It=function(t,e){var i=e.charAt(0),r=parseFloat(e.substr(2));return t=parseFloat(t),i==="+"?t+r:i==="-"?t-r:i==="*"?t*r:t/r},Kr=function(t,e){for(var i=e.length,r=0;t.indexOf(e[r])<0&&++r<i;);return r<i},Se=function(){var t=Tt.length,e=Tt.slice(0),i,r;for(je={},Tt.length=0,i=0;i<t;i++)r=e[i],r&&r._lazy&&(r.render(r._lazy[0],r._lazy[1],!0)._lazy=0)},ci=function(t){return!!(t._initted||t._startAt||t.add)},Zi=function(t,e,i,r){Tt.length&&!q&&Se(),t.render(e,i,r||!!(q&&e<0&&ci(t))),Tt.length&&!q&&Se()},Ki=function(t){var e=parseFloat(t);return(e||e===0)&&(t+"").match(Qr).length<2?e:W(t)?t.trim():t},Ji=function(t){return t},st=function(t,e){for(var i in e)i in t||(t[i]=e[i]);return t},Jr=function(t){return function(e,i){for(var r in i)r in e||r==="duration"&&t||r==="ease"||(e[r]=i[r])}},Qt=function(t,e){for(var i in e)t[i]=e[i];return t},Ni=function l(t,e){for(var i in e)i!=="__proto__"&&i!=="constructor"&&i!=="prototype"&&(t[i]=dt(e[i])?l(t[i]||(t[i]={}),e[i]):e[i]);return t},Ae=function(t,e){var i={},r;for(r in t)r in e||(i[r]=t[r]);return i},le=function(t){var e=t.parent||E,i=t.keyframes?Jr(Q(t.keyframes)):st;if(tt(t.inherit))for(;e;)i(t,e.vars.defaults),e=e.parent||e._dp;return t},tn=function(t,e){for(var i=t.length,r=i===e.length;r&&i--&&t[i]===e[i];);return i<0},tr=function(t,e,i,r,n){i===void 0&&(i="_first"),r===void 0&&(r="_last");var s=t[r],o;if(n)for(o=e[n];s&&s[n]>o;)s=s._prev;return s?(e._next=s._next,s._next=e):(e._next=t[i],t[i]=e),e._next?e._next._prev=e:t[r]=e,e._prev=s,e.parent=e._dp=t,e},De=function(t,e,i,r){i===void 0&&(i="_first"),r===void 0&&(r="_last");var n=e._prev,s=e._next;n?n._next=s:t[i]===e&&(t[i]=s),s?s._prev=n:t[r]===e&&(t[r]=n),e._next=e._prev=e.parent=null},At=function(t,e){t.parent&&(!e||t.parent.autoRemoveChildren)&&t.parent.remove&&t.parent.remove(t),t._act=0},Ft=function(t,e){if(t&&(!e||e._end>t._dur||e._start<0))for(var i=t;i;)i._dirty=1,i=i.parent;return t},en=function(t){for(var e=t.parent;e&&e.parent;)e._dirty=1,e.totalDuration(),e=e.parent;return t},Qe=function(t,e,i,r){return t._startAt&&(q?t._startAt.revert(ke):t.vars.immediateRender&&!t.vars.autoRevert||t._startAt.render(e,!0,r))},rn=function l(t){return!t||t._ts&&l(t.parent)},Ii=function(t){return t._repeat?$t(t._tTime,t=t.duration()+t._rDelay)*t:0},$t=function(t,e){var i=Math.floor(t=z(t/e));return t&&i===t?i-1:i},Ce=function(t,e){return(t-e._start)*e._ts+(e._ts>=0?0:e._dirty?e.totalDuration():e._tDur)},ze=function(t){return t._end=z(t._start+(t._tDur/Math.abs(t._ts||t._rts||O)||0))},Ee=function(t,e){var i=t._dp;return i&&i.smoothChildTiming&&t._ts&&(t._start=z(i._time-(t._ts>0?e/t._ts:((t._dirty?t.totalDuration():t._tDur)-e)/-t._ts)),ze(t),i._dirty||Ft(i,t)),t},er=function(t,e){var i;if((e._time||!e._dur&&e._initted||e._start<t._time&&(e._dur||!e.add))&&(i=Ce(t.rawTime(),e),(!e._dur||me(0,e.totalDuration(),i)-e._tTime>O)&&e.render(i,!0)),Ft(t,e)._dp&&t._initted&&t._time>=t._dur&&t._ts){if(t._dur<t.duration())for(i=t;i._dp;)i.rawTime()>=0&&i.totalTime(i._tTime),i=i._dp;t._zTime=-O}},ht=function(t,e,i,r){return e.parent&&At(e),e._start=z((vt(i)?i:i||t!==E?lt(t,i,e):t._time)+e._delay),e._end=z(e._start+(e.totalDuration()/Math.abs(e.timeScale())||0)),tr(t,e,"_first","_last",t._sort?"_start":0),$e(e)||(t._recent=e),r||er(t,e),t._ts<0&&Ee(t,t._tTime),t},ir=function(t,e){return(nt.ScrollTrigger||Me("scrollTrigger",e))&&nt.ScrollTrigger.create(e,t)},rr=function(t,e,i,r,n){if(pi(t,e,n),!t._initted)return 1;if(!i&&t._pt&&!q&&(t._dur&&t.vars.lazy!==!1||!t._dur&&t.vars.lazy)&&Hi!==J.frame)return Tt.push(t),t._lazy=[n,r],1},nn=function l(t){var e=t.parent;return e&&e._ts&&e._initted&&!e._lock&&(e.rawTime()<0||l(e))},$e=function(t){var e=t.data;return e==="isFromStart"||e==="isStart"},sn=function(t,e,i,r){var n=t.ratio,s=e<0||!e&&(!t._start&&nn(t)&&!(!t._initted&&$e(t))||(t._ts<0||t._dp._ts<0)&&!$e(t))?0:1,o=t._rDelay,u=0,a,c,h;if(o&&t._repeat&&(u=me(0,t._tDur,e),c=$t(u,o),t._yoyo&&c&1&&(s=1-s),c!==$t(t._tTime,o)&&(n=1-s,t.vars.repeatRefresh&&t._initted&&t.invalidate())),s!==n||q||r||t._zTime===O||!e&&t._zTime){if(!t._initted&&rr(t,e,r,i,u))return;for(h=t._zTime,t._zTime=e||(i?O:0),i||(i=e&&!h),t.ratio=s,t._from&&(s=1-s),t._time=0,t._tTime=u,a=t._pt;a;)a.r(s,a.d),a=a._next;e<0&&Qe(t,e,i,!0),t._onUpdate&&!i&&rt(t,"onUpdate"),u&&t._repeat&&!i&&t.parent&&rt(t,"onRepeat"),(e>=t._tDur||e<0)&&t.ratio===s&&(s&&At(t,1),!i&&!q&&(rt(t,s?"onComplete":"onReverseComplete",!0),t._prom&&t._prom()))}else t._zTime||(t._zTime=e)},on=function(t,e,i){var r;if(i>e)for(r=t._first;r&&r._start<=i;){if(r.data==="isPause"&&r._start>e)return r;r=r._next}else for(r=t._last;r&&r._start>=i;){if(r.data==="isPause"&&r._start<e)return r;r=r._prev}},Ht=function(t,e,i,r){var n=t._repeat,s=z(e)||0,o=t._tTime/t._tDur;return o&&!r&&(t._time*=s/t._dur),t._dur=s,t._tDur=n?n<0?1e10:z(s*(n+1)+t._rDelay*n):s,o>0&&!r&&Ee(t,t._tTime=t._tDur*o),t.parent&&ze(t),i||Ft(t.parent,t),t},Ui=function(t){return t instanceof j?Ft(t):Ht(t,t._dur)},an={_start:0,endTime:de,totalDuration:de},lt=function l(t,e,i){var r=t.labels,n=t._recent||an,s=t.duration()>=ut?n.endTime(!1):t._dur,o,u,a;return W(e)&&(isNaN(e)||e in r)?(u=e.charAt(0),a=e.substr(-1)==="%",o=e.indexOf("="),u==="<"||u===">"?(o>=0&&(e=e.replace(/=/,"")),(u==="<"?n._start:n.endTime(n._repeat>=0))+(parseFloat(e.substr(1))||0)*(a?(o<0?n:i).totalDuration()/100:1)):o<0?(e in r||(r[e]=s),r[e]):(u=parseFloat(e.charAt(o-1)+e.substr(o+1)),a&&i&&(u=u/100*(Q(i)?i[0]:i).totalDuration()),o>1?l(t,e.substr(0,o-1),i)+u:s+u)):e==null?s:+e},ue=function(t,e,i){var r=vt(e[1]),n=(r?2:1)+(t<2?0:1),s=e[n],o,u;if(r&&(s.duration=e[1]),s.parent=i,t){for(o=s,u=i;u&&!("immediateRender"in o);)o=u.vars.defaults||{},u=tt(u.vars.inherit)&&u.parent;s.immediateRender=tt(o.immediateRender),t<2?s.runBackwards=1:s.startAt=e[n-1]}return new V(e[0],s,e[n+1])},Ct=function(t,e){return t||t===0?e(t):e},me=function(t,e,i){return i<t?t:i>e?e:i},G=function(t,e){return!W(t)||!(e=$r.exec(t))?"":e[1]},ln=function(t,e,i){return Ct(i,function(r){return me(t,e,r)})},He=[].slice,nr=function(t,e){return t&&dt(t)&&"length"in t&&(!e&&!t.length||t.length-1 in t&&dt(t[0]))&&!t.nodeType&&t!==ft},un=function(t,e,i){return i===void 0&&(i=[]),t.forEach(function(r){var n;return W(r)&&!e||nr(r,1)?(n=i).push.apply(n,ct(r)):i.push(r)})||i},ct=function(t,e,i){return D&&!e&&D.selector?D.selector(t):W(t)&&!i&&(Ge||!Zt())?He.call((e||si).querySelectorAll(t),0):Q(t)?un(t,i):nr(t)?He.call(t,0):t?[t]:[]},Ze=function(t){return t=ct(t)[0]||he("Invalid scope")||{},function(e){var i=t.current||t.nativeElement||t;return ct(e,i.querySelectorAll?i:i===t?he("Invalid scope")||si.createElement("div"):t)}},sr=function(t){return t.sort(function(){return .5-Math.random()})},or=function(t){if(L(t))return t;var e=dt(t)?t:{each:t},i=Bt(e.ease),r=e.from||0,n=parseFloat(e.base)||0,s={},o=r>0&&r<1,u=isNaN(r)||o,a=e.axis,c=r,h=r;return W(r)?c=h={center:.5,edges:.5,end:1}[r]||0:!o&&u&&(c=r[0],h=r[1]),function(_,d,m){var f=(m||e).length,p=s[f],g,x,b,k,v,S,y,T,w;if(!p){if(w=e.grid==="auto"?0:(e.grid||[1,ut])[1],!w){for(y=-ut;y<(y=m[w++].getBoundingClientRect().left)&&w<f;);w<f&&w--}for(p=s[f]=[],g=u?Math.min(w,f)*c-.5:r%w,x=w===ut?0:u?f*h/w-.5:r/w|0,y=0,T=ut,S=0;S<f;S++)b=S%w-g,k=x-(S/w|0),p[S]=v=a?Math.abs(a==="y"?k:b):qi(b*b+k*k),v>y&&(y=v),v<T&&(T=v);r==="random"&&sr(p),p.max=y-T,p.min=T,p.v=f=(parseFloat(e.amount)||parseFloat(e.each)*(w>f?f-1:a?a==="y"?f/w:w:Math.max(w,f/w))||0)*(r==="edges"?-1:1),p.b=f<0?n-f:n,p.u=G(e.amount||e.each)||0,i=i&&f<0?yn(i):i}return f=(p[_]-p.min)/p.max||0,z(p.b+(i?i(f):f)*p.v)+p.u}},Ke=function(t){var e=Math.pow(10,((t+"").split(".")[1]||"").length);return function(i){var r=z(Math.round(parseFloat(i)/t)*t*e);return(r-r%1)/e+(vt(i)?0:G(i))}},ar=function(t,e){var i=Q(t),r,n;return!i&&dt(t)&&(r=i=t.radius||ut,t.values?(t=ct(t.values),(n=!vt(t[0]))&&(r*=r)):t=Ke(t.increment)),Ct(e,i?L(t)?function(s){return n=t(s),Math.abs(n-s)<=r?n:s}:function(s){for(var o=parseFloat(n?s.x:s),u=parseFloat(n?s.y:0),a=ut,c=0,h=t.length,_,d;h--;)n?(_=t[h].x-o,d=t[h].y-u,_=_*_+d*d):_=Math.abs(t[h]-o),_<a&&(a=_,c=h);return c=!r||a<=r?t[c]:s,n||c===s||vt(s)?c:c+G(s)}:Ke(t))},lr=function(t,e,i,r){return Ct(Q(t)?!e:i===!0?!!(i=0):!r,function(){return Q(t)?t[~~(Math.random()*t.length)]:(i=i||1e-5)&&(r=i<1?Math.pow(10,(i+"").length-2):1)&&Math.floor(Math.round((t-i/2+Math.random()*(e-t+i*.99))/i)*i*r)/r})},cn=function(){for(var t=arguments.length,e=new Array(t),i=0;i<t;i++)e[i]=arguments[i];return function(r){return e.reduce(function(n,s){return s(n)},r)}},fn=function(t,e){return function(i){return t(parseFloat(i))+(e||G(i))}},hn=function(t,e,i){return cr(t,e,0,1,i)},ur=function(t,e,i){return Ct(i,function(r){return t[~~e(r)]})},dn=function l(t,e,i){var r=e-t;return Q(t)?ur(t,l(0,t.length),e):Ct(i,function(n){return(r+(n-t)%r)%r+t})},_n=function l(t,e,i){var r=e-t,n=r*2;return Q(t)?ur(t,l(0,t.length-1),e):Ct(i,function(s){return s=(n+(s-t)%n)%n||0,t+(s>r?n-s:s)})},Kt=function(t){return t.replace(Gr,function(e){var i=e.indexOf("[")+1,r=e.substring(i||7,i?e.indexOf("]"):e.length-1).split(jr);return lr(i?r:+r[0],i?0:+r[1],+r[2]||1e-5)})},cr=function(t,e,i,r,n){var s=e-t,o=r-i;return Ct(n,function(u){return i+((u-t)/s*o||0)})},pn=function l(t,e,i,r){var n=isNaN(t+e)?0:function(d){return(1-d)*t+d*e};if(!n){var s=W(t),o={},u,a,c,h,_;if(i===!0&&(r=1)&&(i=null),s)t={p:t},e={p:e};else if(Q(t)&&!Q(e)){for(c=[],h=t.length,_=h-2,a=1;a<h;a++)c.push(l(t[a-1],t[a]));h--,n=function(m){m*=h;var f=Math.min(_,~~m);return c[f](m-f)},i=e}else r||(t=Qt(Q(t)?[]:{},t));if(!c){for(u in e)di.call(o,t,u,"get",e[u]);n=function(m){return xi(m,o)||(s?t.p:t)}}}return Ct(i,n)},Vi=function(t,e,i){var r=t.labels,n=ut,s,o,u;for(s in r)o=r[s]-e,o<0==!!i&&o&&n>(o=Math.abs(o))&&(u=s,n=o);return u},rt=function(t,e,i){var r=t.vars,n=r[e],s=D,o=t._ctx,u,a,c;if(n)return u=r[e+"Params"],a=r.callbackScope||t,i&&Tt.length&&Se(),o&&(D=o),c=u?n.apply(a,u):n.call(a),D=s,c},oe=function(t){return At(t),t.scrollTrigger&&t.scrollTrigger.kill(!!q),t.progress()<1&&rt(t,"onInterrupt"),t},jt,fr=[],hr=function(t){if(t)if(t=!t.name&&t.default||t,ii()||t.headless){var e=t.name,i=L(t),r=e&&!i&&t.init?function(){this._props=[]}:t,n={init:de,render:xi,add:di,kill:zn,modifier:Dn,rawVars:0},s={targetTest:0,get:0,getSetter:Re,aliases:{},register:0};if(Zt(),t!==r){if(K[e])return;st(r,st(Ae(t,n),s)),Qt(r.prototype,Qt(n,Ae(t,s))),K[r.prop=e]=r,t.targetTest&&(ye.push(r),oi[e]=1),e=(e==="css"?"CSS":e.charAt(0).toUpperCase()+e.substr(1))+"Plugin"}$i(e,r),t.register&&t.register($,r,Z)}else fr.push(t)},P=255,ae={aqua:[0,P,P],lime:[0,P,0],silver:[192,192,192],black:[0,0,0],maroon:[128,0,0],teal:[0,128,128],blue:[0,0,P],navy:[0,0,128],white:[P,P,P],olive:[128,128,0],yellow:[P,P,0],orange:[P,165,0],gray:[128,128,128],purple:[128,0,128],green:[0,128,0],red:[P,0,0],pink:[P,192,203],cyan:[0,P,P],transparent:[P,P,P,0]},Ue=function(t,e,i){return t+=t<0?1:t>1?-1:0,(t*6<1?e+(i-e)*t*6:t<.5?i:t*3<2?e+(i-e)*(2/3-t)*6:e)*P+.5|0},dr=function(t,e,i){var r=t?vt(t)?[t>>16,t>>8&P,t&P]:0:ae.black,n,s,o,u,a,c,h,_,d,m;if(!r){if(t.substr(-1)===","&&(t=t.substr(0,t.length-1)),ae[t])r=ae[t];else if(t.charAt(0)==="#"){if(t.length<6&&(n=t.charAt(1),s=t.charAt(2),o=t.charAt(3),t="#"+n+n+s+s+o+o+(t.length===5?t.charAt(4)+t.charAt(4):"")),t.length===9)return r=parseInt(t.substr(1,6),16),[r>>16,r>>8&P,r&P,parseInt(t.substr(7),16)/255];t=parseInt(t.substr(1),16),r=[t>>16,t>>8&P,t&P]}else if(t.substr(0,3)==="hsl"){if(r=m=t.match(Bi),!e)u=+r[0]%360/360,a=+r[1]/100,c=+r[2]/100,s=c<=.5?c*(a+1):c+a-c*a,n=c*2-s,r.length>3&&(r[3]*=1),r[0]=Ue(u+1/3,n,s),r[1]=Ue(u,n,s),r[2]=Ue(u-1/3,n,s);else if(~t.indexOf("="))return r=t.match(ri),i&&r.length<4&&(r[3]=1),r}else r=t.match(Bi)||ae.transparent;r=r.map(Number)}return e&&!m&&(n=r[0]/P,s=r[1]/P,o=r[2]/P,h=Math.max(n,s,o),_=Math.min(n,s,o),c=(h+_)/2,h===_?u=a=0:(d=h-_,a=c>.5?d/(2-h-_):d/(h+_),u=h===n?(s-o)/d+(s<o?6:0):h===s?(o-n)/d+2:(n-s)/d+4,u*=60),r[0]=~~(u+.5),r[1]=~~(a*100+.5),r[2]=~~(c*100+.5)),i&&r.length<4&&(r[3]=1),r},_r=function(t){var e=[],i=[],r=-1;return t.split(xt).forEach(function(n){var s=n.match(Nt)||[];e.push.apply(e,s),i.push(r+=s.length+1)}),e.c=i,e},Yi=function(t,e,i){var r="",n=(t+r).match(xt),s=e?"hsla(":"rgba(",o=0,u,a,c,h;if(!n)return t;if(n=n.map(function(_){return(_=dr(_,e,1))&&s+(e?_[0]+","+_[1]+"%,"+_[2]+"%,"+_[3]:_.join(","))+")"}),i&&(c=_r(t),u=i.c,u.join(r)!==c.c.join(r)))for(a=t.replace(xt,"1").split(Nt),h=a.length-1;o<h;o++)r+=a[o]+(~u.indexOf(o)?n.shift()||s+"0,0,0,0)":(c.length?c:n.length?n:i).shift());if(!a)for(a=t.split(xt),h=a.length-1;o<h;o++)r+=a[o]+n[o];return r+a[h]},xt=function(){var l="(?:\\b(?:(?:rgb|rgba|hsl|hsla)\\(.+?\\))|\\B#(?:[0-9a-f]{3,4}){1,2}\\b",t;for(t in ae)l+="|"+t+"\\b";return new RegExp(l+")","gi")}(),mn=/hsl[a]?\(/,fi=function(t){var e=t.join(" "),i;if(xt.lastIndex=0,xt.test(e))return i=mn.test(e),t[1]=Yi(t[1],i),t[0]=Yi(t[0],i,_r(t[1])),!0},_e,J=function(){var l=Date.now,t=500,e=33,i=l(),r=i,n=1e3/240,s=n,o=[],u,a,c,h,_,d,m=function f(p){var g=l()-r,x=p===!0,b,k,v,S;if((g>t||g<0)&&(i+=g-e),r+=g,v=r-i,b=v-s,(b>0||x)&&(S=++h.frame,_=v-h.time*1e3,h.time=v=v/1e3,s+=b+(b>=n?4:n-b),k=1),x||(u=a(f)),k)for(d=0;d<o.length;d++)o[d](v,_,S,p)};return h={time:0,frame:0,tick:function(){m(!0)},deltaRatio:function(p){return _/(1e3/(p||60))},wake:function(){ji&&(!Ge&&ii()&&(ft=Ge=window,si=ft.document||{},nt.gsap=$,(ft.gsapVersions||(ft.gsapVersions=[])).push($.version),Qi(Te||ft.GreenSockGlobals||!ft.gsap&&ft||{}),fr.forEach(hr)),c=typeof requestAnimationFrame<"u"&&requestAnimationFrame,u&&h.sleep(),a=c||function(p){return setTimeout(p,s-h.time*1e3+1|0)},_e=1,m(2))},sleep:function(){(c?cancelAnimationFrame:clearTimeout)(u),_e=0,a=de},lagSmoothing:function(p,g){t=p||1/0,e=Math.min(g||33,t)},fps:function(p){n=1e3/(p||240),s=h.time*1e3+n},add:function(p,g,x){var b=g?function(k,v,S,y){p(k,v,S,y),h.remove(b)}:p;return h.remove(p),o[x?"unshift":"push"](b),Zt(),b},remove:function(p,g){~(g=o.indexOf(p))&&o.splice(g,1)&&d>=g&&d--},_listeners:o},h}(),Zt=function(){return!_e&&J.wake()},C={},gn=/^[\d.\-M][\d.\-,\s]/,xn=/["']/g,vn=function(t){for(var e={},i=t.substr(1,t.length-3).split(":"),r=i[0],n=1,s=i.length,o,u,a;n<s;n++)u=i[n],o=n!==s-1?u.lastIndexOf(","):u.length,a=u.substr(0,o),e[r]=isNaN(a)?a.replace(xn,"").trim():+a,r=u.substr(o+1).trim();return e},bn=function(t){var e=t.indexOf("(")+1,i=t.indexOf(")"),r=t.indexOf("(",e);return t.substring(e,~r&&r<i?t.indexOf(")",i+1):i)},kn=function(t){var e=(t+"").split("("),i=C[e[0]];return i&&e.length>1&&i.config?i.config.apply(null,~t.indexOf("{")?[vn(e[1])]:bn(t).split(",").map(Ki)):C._CE&&gn.test(t)?C._CE("",t):i},yn=function(t){return function(e){return 1-t(1-e)}},Bt=function(t,e){return t&&(L(t)?t:C[t]||kn(t))||e},Ut=function(t,e,i,r){i===void 0&&(i=function(u){return 1-e(1-u)}),r===void 0&&(r=function(u){return u<.5?e(u*2)/2:1-e((1-u)*2)/2});var n={easeIn:e,easeOut:i,easeInOut:r},s;return H(t,function(o){C[o]=nt[o]=n,C[s=o.toLowerCase()]=i;for(var u in n)C[s+(u==="easeIn"?".in":u==="easeOut"?".out":".inOut")]=C[o+"."+u]=n[u]}),n},pr=function(t){return function(e){return e<.5?(1-t(1-e*2))/2:.5+t((e-.5)*2)/2}},Ve=function l(t,e,i){var r=e>=1?e:1,n=(i||(t?.3:.45))/(e<1?e:1),s=n/qe*(Math.asin(1/r)||0),o=function(c){return c===1?1:r*Math.pow(2,-10*c)*qr((c-s)*n)+1},u=t==="out"?o:t==="in"?function(a){return 1-o(1-a)}:pr(o);return n=qe/n,u.config=function(a,c){return l(t,a,c)},u},Ye=function l(t,e){e===void 0&&(e=1.70158);var i=function(s){return s?--s*s*((e+1)*s+e)+1:0},r=t==="out"?i:t==="in"?function(n){return 1-i(1-n)}:pr(i);return r.config=function(n){return l(t,n)},r};H("Linear,Quad,Cubic,Quart,Quint,Strong",function(l,t){var e=t<5?t+1:t;Ut(l+",Power"+(e-1),t?function(i){return Math.pow(i,e)}:function(i){return i},function(i){return 1-Math.pow(1-i,e)},function(i){return i<.5?Math.pow(i*2,e)/2:1-Math.pow((1-i)*2,e)/2})});C.Linear.easeNone=C.none=C.Linear.easeIn;Ut("Elastic",Ve("in"),Ve("out"),Ve());(function(l,t){var e=1/t,i=2*e,r=2.5*e,n=function(o){return o<e?l*o*o:o<i?l*Math.pow(o-1.5/t,2)+.75:o<r?l*(o-=2.25/t)*o+.9375:l*Math.pow(o-2.625/t,2)+.984375};Ut("Bounce",function(s){return 1-n(1-s)},n)})(7.5625,2.75);Ut("Expo",function(l){return Math.pow(2,10*(l-1))*l+l*l*l*l*l*l*(1-l)});Ut("Circ",function(l){return-(qi(1-l*l)-1)});Ut("Sine",function(l){return l===1?1:-Xr(l*Yr)+1});Ut("Back",Ye("in"),Ye("out"),Ye());C.SteppedEase=C.steps=nt.SteppedEase={config:function(t,e){t===void 0&&(t=1);var i=1/t,r=t+(e?0:1),n=e?1:0,s=1-O;return function(o){return((r*me(0,s,o)|0)+n)*i}}};fe.ease=C["quad.out"];H("onComplete,onUpdate,onStart,onRepeat,onReverseComplete,onInterrupt",function(l){return ai+=l+","+l+"Params,"});var hi=function(t,e){this.id=Wr++,t._gsap=this,this.target=t,this.harness=e,this.get=e?e.get:ui,this.set=e?e.getSetter:Re},pe=function(){function l(e){this.vars=e,this._delay=+e.delay||0,(this._repeat=e.repeat===1/0?-2:e.repeat||0)&&(this._rDelay=e.repeatDelay||0,this._yoyo=!!e.yoyo||!!e.yoyoEase),this._ts=1,Ht(this,+e.duration,1,1),this.data=e.data,D&&(this._ctx=D,D.data.push(this)),_e||J.wake()}var t=l.prototype;return t.delay=function(i){return i||i===0?(this.parent&&this.parent.smoothChildTiming&&this.startTime(this._start+i-this._delay),this._delay=i,this):this._delay},t.duration=function(i){return arguments.length?this.totalDuration(this._repeat>0?i+(i+this._rDelay)*this._repeat:i):this.totalDuration()&&this._dur},t.totalDuration=function(i){return arguments.length?(this._dirty=0,Ht(this,this._repeat<0?i:(i-this._repeat*this._rDelay)/(this._repeat+1))):this._tDur},t.totalTime=function(i,r){if(Zt(),!arguments.length)return this._tTime;var n=this._dp;if(n&&n.smoothChildTiming&&this._ts){for(Ee(this,i),!n._dp||n.parent||er(n,this);n&&n.parent;)n.parent._time!==n._start+(n._ts>=0?n._tTime/n._ts:(n.totalDuration()-n._tTime)/-n._ts)&&n.totalTime(n._tTime,!0),n=n.parent;!this.parent&&this._dp.autoRemoveChildren&&(this._ts>0&&i<this._tDur||this._ts<0&&i>0||!this._tDur&&!i)&&ht(this._dp,this,this._start-this._delay)}return(this._tTime!==i||!this._dur&&!r||this._initted&&Math.abs(this._zTime)===O||!this._initted&&this._dur&&i||!i&&!this._initted&&(this.add||this._ptLookup))&&(this._ts||(this._pTime=i),Zi(this,i,r)),this},t.time=function(i,r){return arguments.length?this.totalTime(Math.min(this.totalDuration(),i+Ii(this))%(this._dur+this._rDelay)||(i?this._dur:0),r):this._time},t.totalProgress=function(i,r){return arguments.length?this.totalTime(this.totalDuration()*i,r):this.totalDuration()?Math.min(1,this._tTime/this._tDur):this.rawTime()>=0&&this._initted?1:0},t.progress=function(i,r){return arguments.length?this.totalTime(this.duration()*(this._yoyo&&!(this.iteration()&1)?1-i:i)+Ii(this),r):this.duration()?Math.min(1,this._time/this._dur):this.rawTime()>0?1:0},t.iteration=function(i,r){var n=this.duration()+this._rDelay;return arguments.length?this.totalTime(this._time+(i-1)*n,r):this._repeat?$t(this._tTime,n)+1:1},t.timeScale=function(i,r){if(!arguments.length)return this._rts===-O?0:this._rts;if(this._rts===i)return this;var n=this.parent&&this._ts?Ce(this.parent._time,this):this._tTime;return this._rts=+i||0,this._ts=this._ps||i===-O?0:this._rts,this.totalTime(me(-Math.abs(this._delay),this.totalDuration(),n),r!==!1),ze(this),en(this)},t.paused=function(i){return arguments.length?(this._ps!==i&&(this._ps=i,i?(this._pTime=this._tTime||Math.max(-this._delay,this.rawTime()),this._ts=this._act=0):(Zt(),this._ts=this._rts,this.totalTime(this.parent&&!this.parent.smoothChildTiming?this.rawTime():this._tTime||this._pTime,this.progress()===1&&Math.abs(this._zTime)!==O&&(this._tTime-=O)))),this):this._ps},t.startTime=function(i){if(arguments.length){this._start=z(i);var r=this.parent||this._dp;return r&&(r._sort||!this.parent)&&ht(r,this,this._start-this._delay),this}return this._start},t.endTime=function(i){return this._start+(tt(i)?this.totalDuration():this.duration())/Math.abs(this._ts||1)},t.rawTime=function(i){var r=this.parent||this._dp;return r?i&&(!this._ts||this._repeat&&this._time&&this.totalProgress()<1)?this._tTime%(this._dur+this._rDelay):this._ts?Ce(r.rawTime(i),this):this._tTime:this._tTime},t.revert=function(i){i===void 0&&(i=Zr);var r=q;return q=i,ci(this)&&(this.timeline&&this.timeline.revert(i),this.totalTime(-.01,i.suppressEvents)),this.data!=="nested"&&i.kill!==!1&&this.kill(),q=r,this},t.globalTime=function(i){for(var r=this,n=arguments.length?i:r.rawTime();r;)n=r._start+n/(Math.abs(r._ts)||1),r=r._dp;return!this.parent&&this._sat?this._sat.globalTime(i):n},t.repeat=function(i){return arguments.length?(this._repeat=i===1/0?-2:i,Ui(this)):this._repeat===-2?1/0:this._repeat},t.repeatDelay=function(i){if(arguments.length){var r=this._time;return this._rDelay=i,Ui(this),r?this.time(r):this}return this._rDelay},t.yoyo=function(i){return arguments.length?(this._yoyo=i,this):this._yoyo},t.seek=function(i,r){return this.totalTime(lt(this,i),tt(r))},t.restart=function(i,r){return this.play().totalTime(i?-this._delay:0,tt(r)),this._dur||(this._zTime=-O),this},t.play=function(i,r){return i!=null&&this.seek(i,r),this.reversed(!1).paused(!1)},t.reverse=function(i,r){return i!=null&&this.seek(i||this.totalDuration(),r),this.reversed(!0).paused(!1)},t.pause=function(i,r){return i!=null&&this.seek(i,r),this.paused(!0)},t.resume=function(){return this.paused(!1)},t.reversed=function(i){return arguments.length?(!!i!==this.reversed()&&this.timeScale(-this._rts||(i?-O:0)),this):this._rts<0},t.invalidate=function(){return this._initted=this._act=0,this._zTime=-O,this},t.isActive=function(){var i=this.parent||this._dp,r=this._start,n;return!!(!i||this._ts&&this._initted&&i.isActive()&&(n=i.rawTime(!0))>=r&&n<this.endTime(!0)-O)},t.eventCallback=function(i,r,n){var s=this.vars;return arguments.length>1?(r?(s[i]=r,n&&(s[i+"Params"]=n),i==="onUpdate"&&(this._onUpdate=r)):delete s[i],this):s[i]},t.then=function(i){var r=this,n=r._prom;return new Promise(function(s){var o=L(i)?i:Ji,u=function(){var c=r.then;r.then=null,n&&n(),L(o)&&(o=o(r))&&(o.then||o===r)&&(r.then=c),s(o),r.then=c};r._initted&&r.totalProgress()===1&&r._ts>=0||!r._tTime&&r._ts<0?u():r._prom=u})},t.kill=function(){oe(this)},l}();st(pe.prototype,{_time:0,_start:0,_end:0,_tTime:0,_tDur:0,_dirty:0,_repeat:0,_yoyo:!1,parent:null,_initted:!1,_rDelay:0,_ts:1,_dp:0,ratio:0,_zTime:-O,_prom:0,_ps:!1,_rts:1});var j=function(l){Xi(t,l);function t(i,r){var n;return i===void 0&&(i={}),n=l.call(this,i)||this,n.labels={},n.smoothChildTiming=!!i.smoothChildTiming,n.autoRemoveChildren=!!i.autoRemoveChildren,n._sort=tt(i.sortChildren),E&&ht(i.parent||E,gt(n),r),i.reversed&&n.reverse(),i.paused&&n.paused(!0),i.scrollTrigger&&ir(gt(n),i.scrollTrigger),n}var e=t.prototype;return e.to=function(r,n,s){return ue(0,arguments,this),this},e.from=function(r,n,s){return ue(1,arguments,this),this},e.fromTo=function(r,n,s,o){return ue(2,arguments,this),this},e.set=function(r,n,s){return n.duration=0,n.parent=this,le(n).repeatDelay||(n.repeat=0),n.immediateRender=!!n.immediateRender,new V(r,n,lt(this,s),1),this},e.call=function(r,n,s){return ht(this,V.delayedCall(0,r,n),s)},e.staggerTo=function(r,n,s,o,u,a,c){return s.duration=n,s.stagger=s.stagger||o,s.onComplete=a,s.onCompleteParams=c,s.parent=this,new V(r,s,lt(this,u)),this},e.staggerFrom=function(r,n,s,o,u,a,c){return s.runBackwards=1,le(s).immediateRender=tt(s.immediateRender),this.staggerTo(r,n,s,o,u,a,c)},e.staggerFromTo=function(r,n,s,o,u,a,c,h){return o.startAt=s,le(o).immediateRender=tt(o.immediateRender),this.staggerTo(r,n,o,u,a,c,h)},e.render=function(r,n,s){var o=this._time,u=this._dirty?this.totalDuration():this._tDur,a=this._dur,c=r<=0?0:z(r),h=this._zTime<0!=r<0&&(this._initted||!a),_,d,m,f,p,g,x,b,k,v,S,y;if(this!==E&&c>u&&r>=0&&(c=u),c!==this._tTime||s||h){if(o!==this._time&&a&&(c+=this._time-o,r+=this._time-o),_=c,k=this._start,b=this._ts,g=!b,h&&(a||(o=this._zTime),(r||!n)&&(this._zTime=r)),this._repeat){if(S=this._yoyo,p=a+this._rDelay,this._repeat<-1&&r<0)return this.totalTime(p*100+r,n,s);if(_=z(c%p),c===u?(f=this._repeat,_=a):(v=z(c/p),f=~~v,f&&f===v&&(_=a,f--),_>a&&(_=a)),v=$t(this._tTime,p),!o&&this._tTime&&v!==f&&this._tTime-v*p-this._dur<=0&&(v=f),S&&f&1&&(_=a-_,y=1),f!==v&&!this._lock){var T=S&&v&1,w=T===(S&&f&1);if(f<v&&(T=!T),o=T?0:c%a?a:c,this._lock=1,this.render(o||(y?0:z(f*p)),n,!a)._lock=0,this._tTime=c,!n&&this.parent&&rt(this,"onRepeat"),this.vars.repeatRefresh&&!y&&(this.invalidate()._lock=1,v=f),o&&o!==this._time||g!==!this._ts||this.vars.onRepeat&&!this.parent&&!this._act)return this;if(a=this._dur,u=this._tDur,w&&(this._lock=2,o=T?a:-1e-4,this.render(o,!0),this.vars.repeatRefresh&&!y&&this.invalidate()),this._lock=0,!this._ts&&!g)return this}}if(this._hasPause&&!this._forcing&&this._lock<2&&(x=on(this,z(o),z(_)),x&&(c-=_-(_=x._start))),this._tTime=c,this._time=_,this._act=!!b,this._initted||(this._onUpdate=this.vars.onUpdate,this._initted=1,this._zTime=r,o=0),!o&&c&&a&&!n&&!v&&(rt(this,"onStart"),this._tTime!==c))return this;if(_>=o&&r>=0)for(d=this._first;d;){if(m=d._next,(d._act||_>=d._start)&&d._ts&&x!==d){if(d.parent!==this)return this.render(r,n,s);if(d.render(d._ts>0?(_-d._start)*d._ts:(d._dirty?d.totalDuration():d._tDur)+(_-d._start)*d._ts,n,s),_!==this._time||!this._ts&&!g){x=0,m&&(c+=this._zTime=-O);break}}d=m}else{d=this._last;for(var A=r<0?r:_;d;){if(m=d._prev,(d._act||A<=d._end)&&d._ts&&x!==d){if(d.parent!==this)return this.render(r,n,s);if(d.render(d._ts>0?(A-d._start)*d._ts:(d._dirty?d.totalDuration():d._tDur)+(A-d._start)*d._ts,n,s||q&&ci(d)),_!==this._time||!this._ts&&!g){x=0,m&&(c+=this._zTime=A?-O:O);break}}d=m}}if(x&&!n&&(this.pause(),x.render(_>=o?0:-O)._zTime=_>=o?1:-1,this._ts))return this._start=k,ze(this),this.render(r,n,s);this._onUpdate&&!n&&rt(this,"onUpdate",!0),(c===u&&this._tTime>=this.totalDuration()||!c&&o)&&(k===this._start||Math.abs(b)!==Math.abs(this._ts))&&(this._lock||((r||!a)&&(c===u&&this._ts>0||!c&&this._ts<0)&&At(this,1),!n&&!(r<0&&!o)&&(c||o||!u)&&(rt(this,c===u&&r>=0?"onComplete":"onReverseComplete",!0),this._prom&&!(c<u&&this.timeScale()>0)&&this._prom())))}return this},e.add=function(r,n){var s=this;if(vt(n)||(n=lt(this,n,r)),!(r instanceof pe)){if(Q(r))return r.forEach(function(o){return s.add(o,n)}),this;if(W(r))return this.addLabel(r,n);if(L(r))r=V.delayedCall(0,r);else return this}return this!==r?ht(this,r,n):this},e.getChildren=function(r,n,s,o){r===void 0&&(r=!0),n===void 0&&(n=!0),s===void 0&&(s=!0),o===void 0&&(o=-ut);for(var u=[],a=this._first;a;)a._start>=o&&(a instanceof V?n&&u.push(a):(s&&u.push(a),r&&u.push.apply(u,a.getChildren(!0,n,s)))),a=a._next;return u},e.getById=function(r){for(var n=this.getChildren(1,1,1),s=n.length;s--;)if(n[s].vars.id===r)return n[s]},e.remove=function(r){return W(r)?this.removeLabel(r):L(r)?this.killTweensOf(r):(r.parent===this&&De(this,r),r===this._recent&&(this._recent=this._last),Ft(this))},e.totalTime=function(r,n){return arguments.length?(this._forcing=1,!this._dp&&this._ts&&(this._start=z(J.time-(this._ts>0?r/this._ts:(this.totalDuration()-r)/-this._ts))),l.prototype.totalTime.call(this,r,n),this._forcing=0,this):this._tTime},e.addLabel=function(r,n){return this.labels[r]=lt(this,n),this},e.removeLabel=function(r){return delete this.labels[r],this},e.addPause=function(r,n,s){var o=V.delayedCall(0,n||de,s);return o.data="isPause",this._hasPause=1,ht(this,o,lt(this,r))},e.removePause=function(r){var n=this._first;for(r=lt(this,r);n;)n._start===r&&n.data==="isPause"&&At(n),n=n._next},e.killTweensOf=function(r,n,s){for(var o=this.getTweensOf(r,s),u=o.length;u--;)wt!==o[u]&&o[u].kill(r,n);return this},e.getTweensOf=function(r,n){for(var s=[],o=ct(r),u=this._first,a=vt(n),c;u;)u instanceof V?Kr(u._targets,o)&&(a?(!wt||u._initted&&u._ts)&&u.globalTime(0)<=n&&u.globalTime(u.totalDuration())>n:!n||u.isActive())&&s.push(u):(c=u.getTweensOf(o,n)).length&&s.push.apply(s,c),u=u._next;return s},e.tweenTo=function(r,n){n=n||{};var s=this,o=lt(s,r),u=n,a=u.startAt,c=u.onStart,h=u.onStartParams,_=u.immediateRender,d,m=V.to(s,st({ease:n.ease||"none",lazy:!1,immediateRender:!1,time:o,overwrite:"auto",duration:n.duration||Math.abs((o-(a&&"time"in a?a.time:s._time))/s.timeScale())||O,onStart:function(){if(s.pause(),!d){var p=n.duration||Math.abs((o-(a&&"time"in a?a.time:s._time))/s.timeScale());m._dur!==p&&Ht(m,p,0,1).render(m._time,!0,!0),d=1}c&&c.apply(m,h||[])}},n));return _?m.render(0):m},e.tweenFromTo=function(r,n,s){return this.tweenTo(n,st({startAt:{time:lt(this,r)}},s))},e.recent=function(){return this._recent},e.nextLabel=function(r){return r===void 0&&(r=this._time),Vi(this,lt(this,r))},e.previousLabel=function(r){return r===void 0&&(r=this._time),Vi(this,lt(this,r),1)},e.currentLabel=function(r){return arguments.length?this.seek(r,!0):this.previousLabel(this._time+O)},e.shiftChildren=function(r,n,s){s===void 0&&(s=0);var o=this._first,u=this.labels,a;for(r=z(r);o;)o._start>=s&&(o._start+=r,o._end+=r),o=o._next;if(n)for(a in u)u[a]>=s&&(u[a]+=r);return Ft(this)},e.invalidate=function(r){var n=this._first;for(this._lock=0;n;)n.invalidate(r),n=n._next;return l.prototype.invalidate.call(this,r)},e.clear=function(r){r===void 0&&(r=!0);for(var n=this._first,s;n;)s=n._next,this.remove(n),n=s;return this._dp&&(this._time=this._tTime=this._pTime=0),r&&(this.labels={}),Ft(this)},e.totalDuration=function(r){var n=0,s=this,o=s._last,u=ut,a,c,h;if(arguments.length)return s.timeScale((s._repeat<0?s.duration():s.totalDuration())/(s.reversed()?-r:r));if(s._dirty){for(h=s.parent;o;)a=o._prev,o._dirty&&o.totalDuration(),c=o._start,c>u&&s._sort&&o._ts&&!s._lock?(s._lock=1,ht(s,o,c-o._delay,1)._lock=0):u=c,c<0&&o._ts&&(n-=c,(!h&&!s._dp||h&&h.smoothChildTiming)&&(s._start+=z(c/s._ts),s._time-=c,s._tTime-=c),s.shiftChildren(-c,!1,-1/0),u=0),o._end>n&&o._ts&&(n=o._end),o=a;Ht(s,s===E&&s._time>n?s._time:n,1,1),s._dirty=0}return s._tDur},t.updateRoot=function(r){if(E._ts&&(Zi(E,Ce(r,E)),Hi=J.frame),J.frame>=Li){Li+=et.autoSleep||120;var n=E._first;if((!n||!n._ts)&&et.autoSleep&&J._listeners.length<2){for(;n&&!n._ts;)n=n._next;n||J.sleep()}}},t}(pe);st(j.prototype,{_lock:0,_hasPause:0,_forcing:0});var wn=function(t,e,i,r,n,s,o){var u=new Z(this._pt,t,e,0,1,gi,null,n),a=0,c=0,h,_,d,m,f,p,g,x;for(u.b=i,u.e=r,i+="",r+="",(g=~r.indexOf("random("))&&(r=Kt(r)),s&&(x=[i,r],s(x,t,e),i=x[0],r=x[1]),_=i.match(Ne)||[];h=Ne.exec(r);)m=h[0],f=r.substring(a,h.index),d?d=(d+1)%5:f.substr(-5)==="rgba("&&(d=1),m!==_[c++]&&(p=parseFloat(_[c-1])||0,u._pt={_next:u._pt,p:f||c===1?f:",",s:p,c:m.charAt(1)==="="?It(p,m)-p:parseFloat(m)-p,m:d&&d<4?Math.round:0},a=Ne.lastIndex);return u.c=a<r.length?r.substring(a,r.length):"",u.fp=o,(ni.test(r)||g)&&(u.e=0),this._pt=u,u},di=function(t,e,i,r,n,s,o,u,a,c){L(r)&&(r=r(n||0,t,s));var h=t[e],_=i!=="get"?i:L(h)?a?t[e.indexOf("set")||!L(t["get"+e.substr(3)])?e:"get"+e.substr(3)](a):t[e]():h,d=L(h)?a?Pn:xr:mi,m;if(W(r)&&(~r.indexOf("random(")&&(r=Kt(r)),r.charAt(1)==="="&&(m=It(_,r)+(G(_)||0),(m||m===0)&&(r=m))),!c||_!==r||Je)return!isNaN(_*r)&&r!==""?(m=new Z(this._pt,t,e,+_||0,r-(_||0),typeof h=="boolean"?Mn:vr,0,d),a&&(m.fp=a),o&&m.modifier(o,this,t),this._pt=m):(!h&&!(e in t)&&Me(e,r),wn.call(this,t,e,_,r,d,u||et.stringFilter,a))},Tn=function(t,e,i,r,n){if(L(t)&&(t=ce(t,n,e,i,r)),!dt(t)||t.style&&t.nodeType||Q(t)||Gi(t))return W(t)?ce(t,n,e,i,r):t;var s={},o;for(o in t)s[o]=ce(t[o],n,e,i,r);return s},_i=function(t,e,i,r,n,s){var o,u,a,c;if(K[t]&&(o=new K[t]).init(n,o.rawVars?e[t]:Tn(e[t],r,n,s,i),i,r,s)!==!1&&(i._pt=u=new Z(i._pt,n,t,0,1,o.render,o,0,o.priority),i!==jt))for(a=i._ptLookup[i._targets.indexOf(n)],c=o._props.length;c--;)a[o._props[c]]=u;return o},wt,Je,pi=function l(t,e,i){var r=t.vars,n=r.ease,s=r.startAt,o=r.immediateRender,u=r.lazy,a=r.onUpdate,c=r.runBackwards,h=r.yoyoEase,_=r.keyframes,d=r.autoRevert,m=t._dur,f=t._startAt,p=t._targets,g=t.parent,x=g&&g.data==="nested"?g.vars.targets:p,b=t._overwrite==="auto"&&!ei,k=t.timeline,v=r.easeReverse||h,S,y,T,w,A,I,F,M,B,X,Y,U,at;if(k&&(!_||!n)&&(n="none"),t._ease=Bt(n,fe.ease),t._rEase=v&&(Bt(v)||t._ease),t._from=!k&&!!r.runBackwards,t._from&&(t.ratio=1),!k||_&&!r.stagger){if(M=p[0]?St(p[0]).harness:0,U=M&&r[M.prop],S=Ae(r,oi),f&&(f._zTime<0&&f.progress(1),e<0&&c&&o&&!d?f.render(-1,!0):f.revert(c&&m?ke:Hr),f._lazy=0),s){if(At(t._startAt=V.set(p,st({data:"isStart",overwrite:!1,parent:g,immediateRender:!0,lazy:!f&&tt(u),startAt:null,delay:0,onUpdate:a&&function(){return rt(t,"onUpdate")},stagger:0},s))),t._startAt._dp=0,t._startAt._sat=t,e<0&&(q||!o&&!d)&&t._startAt.revert(ke),o&&m&&e<=0&&i<=0){e&&(t._zTime=e);return}}else if(c&&m&&!f){if(e&&(o=!1),T=st({overwrite:!1,data:"isFromStart",lazy:o&&!f&&tt(u),immediateRender:o,stagger:0,parent:g},S),U&&(T[M.prop]=U),At(t._startAt=V.set(p,T)),t._startAt._dp=0,t._startAt._sat=t,e<0&&(q?t._startAt.revert(ke):t._startAt.render(-1,!0)),t._zTime=e,!o)l(t._startAt,O,O);else if(!e)return}for(t._pt=t._ptCache=0,u=m&&tt(u)||u&&!m,y=0;y<p.length;y++){if(A=p[y],F=A._gsap||li(p)[y]._gsap,t._ptLookup[y]=X={},je[F.id]&&Tt.length&&Se(),Y=x===p?y:x.indexOf(A),M&&(B=new M).init(A,U||S,t,Y,x)!==!1&&(t._pt=w=new Z(t._pt,A,B.name,0,1,B.render,B,0,B.priority),B._props.forEach(function(qt){X[qt]=w}),B.priority&&(I=1)),!M||U)for(T in S)K[T]&&(B=_i(T,S,t,Y,A,x))?B.priority&&(I=1):X[T]=w=di.call(t,A,T,"get",S[T],Y,x,0,r.stringFilter);t._op&&t._op[y]&&t.kill(A,t._op[y]),b&&t._pt&&(wt=t,E.killTweensOf(A,X,t.globalTime(e)),at=!t.parent,wt=0),t._pt&&u&&(je[F.id]=1)}I&&vi(t),t._onInit&&t._onInit(t)}t._onUpdate=a,t._initted=(!t._op||t._pt)&&!at,_&&e<=0&&k.render(ut,!0,!0)},Sn=function(t,e,i,r,n,s,o,u){var a=(t._pt&&t._ptCache||(t._ptCache={}))[e],c,h,_,d;if(!a)for(a=t._ptCache[e]=[],_=t._ptLookup,d=t._targets.length;d--;){if(c=_[d][e],c&&c.d&&c.d._pt)for(c=c.d._pt;c&&c.p!==e&&c.fp!==e;)c=c._next;if(!c)return Je=1,t.vars[e]="+=0",pi(t,o),Je=0,u?he(e+" not eligible for reset. Try splitting into individual properties"):1;a.push(c)}for(d=a.length;d--;)h=a[d],c=h._pt||h,c.s=(r||r===0)&&!n?r:c.s+(r||0)+s*c.c,c.c=i-c.s,h.e&&(h.e=N(i)+G(h.e)),h.b&&(h.b=c.s+G(h.b))},An=function(t,e){var i=t[0]?St(t[0]).harness:0,r=i&&i.aliases,n,s,o,u;if(!r)return e;n=Qt({},e);for(s in r)if(s in n)for(u=r[s].split(","),o=u.length;o--;)n[u[o]]=n[s];return n},Cn=function(t,e,i,r){var n=e.ease||r||"power1.inOut",s,o;if(Q(e))o=i[t]||(i[t]=[]),e.forEach(function(u,a){return o.push({t:a/(e.length-1)*100,v:u,e:n})});else for(s in e)o=i[s]||(i[s]=[]),s==="ease"||o.push({t:parseFloat(t),v:e[s],e:n})},ce=function(t,e,i,r,n){return L(t)?t.call(e,i,r,n):W(t)&&~t.indexOf("random(")?Kt(t):t},mr=ai+"repeat,repeatDelay,yoyo,repeatRefresh,yoyoEase,easeReverse,autoRevert",gr={};H(mr+",id,stagger,delay,duration,paused,scrollTrigger",function(l){return gr[l]=1});var V=function(l){Xi(t,l);function t(i,r,n,s){var o;typeof r=="number"&&(n.duration=r,r=n,n=null),o=l.call(this,s?r:le(r))||this;var u=o.vars,a=u.duration,c=u.delay,h=u.immediateRender,_=u.stagger,d=u.overwrite,m=u.keyframes,f=u.defaults,p=u.scrollTrigger,g=r.parent||E,x=(Q(i)||Gi(i)?vt(i[0]):"length"in r)?[i]:ct(i),b,k,v,S,y,T,w,A;if(o._targets=x.length?li(x):he("GSAP target "+i+" not found. https://gsap.com",!et.nullTargetWarn)||[],o._ptLookup=[],o._overwrite=d,m||_||be(a)||be(c)){r=o.vars;var I=r.easeReverse||r.yoyoEase;if(b=o.timeline=new j({data:"nested",defaults:f||{},targets:g&&g.data==="nested"?g.vars.targets:x}),b.kill(),b.parent=b._dp=gt(o),b._start=0,_||be(a)||be(c)){if(S=x.length,w=_&&or(_),dt(_))for(y in _)~mr.indexOf(y)&&(A||(A={}),A[y]=_[y]);for(k=0;k<S;k++)v=Ae(r,gr),v.stagger=0,I&&(v.easeReverse=I),A&&Qt(v,A),T=x[k],v.duration=+ce(a,gt(o),k,T,x),v.delay=(+ce(c,gt(o),k,T,x)||0)-o._delay,!_&&S===1&&v.delay&&(o._delay=c=v.delay,o._start+=c,v.delay=0),b.to(T,v,w?w(k,T,x):0),b._ease=C.none;b.duration()?a=c=0:o.timeline=0}else if(m){le(st(b.vars.defaults,{ease:"none"})),b._ease=Bt(m.ease||r.ease||"none");var F=0,M,B,X;if(Q(m))m.forEach(function(Y){return b.to(x,Y,">")}),b.duration();else{v={};for(y in m)y==="ease"||y==="easeEach"||Cn(y,m[y],v,m.easeEach);for(y in v)for(M=v[y].sort(function(Y,U){return Y.t-U.t}),F=0,k=0;k<M.length;k++)B=M[k],X={ease:B.e,duration:(B.t-(k?M[k-1].t:0))/100*a},X[y]=B.v,b.to(x,X,F),F+=X.duration;b.duration()<a&&b.to({},{duration:a-b.duration()})}}a||o.duration(a=b.duration())}else o.timeline=0;return d===!0&&!ei&&(wt=gt(o),E.killTweensOf(x),wt=0),ht(g,gt(o),n),r.reversed&&o.reverse(),r.paused&&o.paused(!0),(h||!a&&!m&&o._start===z(g._time)&&tt(h)&&rn(gt(o))&&g.data!=="nested")&&(o._tTime=-O,o.render(Math.max(0,-c)||0)),p&&ir(gt(o),p),o}var e=t.prototype;return e.render=function(r,n,s){var o=this._time,u=this._tDur,a=this._dur,c=r<0,h=r>u-O&&!c?u:r<O?0:r,_,d,m,f,p,g,x,b;if(!a)sn(this,r,n,s);else if(h!==this._tTime||!r||s||!this._initted&&this._tTime||this._startAt&&this._zTime<0!==c||this._lazy){if(_=h,b=this.timeline,this._repeat){if(f=a+this._rDelay,this._repeat<-1&&c)return this.totalTime(f*100+r,n,s);if(_=z(h%f),h===u?(m=this._repeat,_=a):(p=z(h/f),m=~~p,m&&m===p?(_=a,m--):_>a&&(_=a)),g=this._yoyo&&m&1,g&&(_=a-_),p=$t(this._tTime,f),_===o&&!s&&this._initted&&m===p)return this._tTime=h,this;m!==p&&this.vars.repeatRefresh&&!g&&!this._lock&&_!==f&&this._initted&&(this._lock=s=1,this.render(z(f*m),!0).invalidate()._lock=0)}if(!this._initted){if(rr(this,c?r:_,s,n,h))return this._tTime=0,this;if(o!==this._time&&!(s&&this.vars.repeatRefresh&&m!==p))return this;if(a!==this._dur)return this.render(r,n,s)}if(this._rEase){var k=_<o;if(k!==this._inv){var v=k?o:a-o;this._inv=k,this._from&&(this.ratio=1-this.ratio),this._invRatio=this.ratio,this._invTime=o,this._invRecip=v?(k?-1:1)/v:0,this._invScale=k?-this.ratio:1-this.ratio,this._invEase=k?this._rEase:this._ease}this.ratio=x=this._invRatio+this._invScale*this._invEase((_-this._invTime)*this._invRecip)}else this.ratio=x=this._ease(_/a);if(this._from&&(this.ratio=x=1-x),this._tTime=h,this._time=_,!this._act&&this._ts&&(this._act=1,this._lazy=0),!o&&h&&!n&&!p&&(rt(this,"onStart"),this._tTime!==h))return this;for(d=this._pt;d;)d.r(x,d.d),d=d._next;b&&b.render(r<0?r:b._dur*b._ease(_/this._dur),n,s)||this._startAt&&(this._zTime=r),this._onUpdate&&!n&&(c&&Qe(this,r,n,s),rt(this,"onUpdate")),this._repeat&&m!==p&&this.vars.onRepeat&&!n&&this.parent&&rt(this,"onRepeat"),(h===this._tDur||!h)&&this._tTime===h&&(c&&!this._onUpdate&&Qe(this,r,!0,!0),(r||!a)&&(h===this._tDur&&this._ts>0||!h&&this._ts<0)&&At(this,1),!n&&!(c&&!o)&&(h||o||g)&&(rt(this,h===u?"onComplete":"onReverseComplete",!0),this._prom&&!(h<u&&this.timeScale()>0)&&this._prom()))}return this},e.targets=function(){return this._targets},e.invalidate=function(r){return(!r||!this.vars.runBackwards)&&(this._startAt=0),this._pt=this._op=this._onUpdate=this._lazy=this.ratio=0,this._ptLookup=[],this.timeline&&this.timeline.invalidate(r),l.prototype.invalidate.call(this,r)},e.resetTo=function(r,n,s,o,u){_e||J.wake(),this._ts||this.play();var a=Math.min(this._dur,(this._dp._time-this._start)*this._ts),c;return this._initted||pi(this,a),c=this._ease(a/this._dur),Sn(this,r,n,s,o,c,a,u)?this.resetTo(r,n,s,o,1):(Ee(this,0),this.parent||tr(this._dp,this,"_first","_last",this._dp._sort?"_start":0),this.render(0))},e.kill=function(r,n){if(n===void 0&&(n="all"),!r&&(!n||n==="all"))return this._lazy=this._pt=0,this.parent?oe(this):this.scrollTrigger&&this.scrollTrigger.kill(!!q),this;if(this.timeline){var s=this.timeline.totalDuration();return this.timeline.killTweensOf(r,n,wt&&wt.vars.overwrite!==!0)._first||oe(this),this.parent&&s!==this.timeline.totalDuration()&&Ht(this,this._dur*this.timeline._tDur/s,0,1),this}var o=this._targets,u=r?ct(r):o,a=this._ptLookup,c=this._pt,h,_,d,m,f,p,g;if((!n||n==="all")&&tn(o,u))return n==="all"&&(this._pt=0),oe(this);for(h=this._op=this._op||[],n!=="all"&&(W(n)&&(f={},H(n,function(x){return f[x]=1}),n=f),n=An(o,n)),g=o.length;g--;)if(~u.indexOf(o[g])){_=a[g],n==="all"?(h[g]=n,m=_,d={}):(d=h[g]=h[g]||{},m=n);for(f in m)p=_&&_[f],p&&((!("kill"in p.d)||p.d.kill(f)===!0)&&De(this,p,"_pt"),delete _[f]),d!=="all"&&(d[f]=1)}return this._initted&&!this._pt&&c&&oe(this),this},t.to=function(r,n){return new t(r,n,arguments[2])},t.from=function(r,n){return ue(1,arguments)},t.delayedCall=function(r,n,s,o){return new t(n,0,{immediateRender:!1,lazy:!1,overwrite:!1,delay:r,onComplete:n,onReverseComplete:n,onCompleteParams:s,onReverseCompleteParams:s,callbackScope:o})},t.fromTo=function(r,n,s){return ue(2,arguments)},t.set=function(r,n){return n.duration=0,n.repeatDelay||(n.repeat=0),new t(r,n)},t.killTweensOf=function(r,n,s){return E.killTweensOf(r,n,s)},t}(pe);st(V.prototype,{_targets:[],_lazy:0,_startAt:0,_op:0,_onInit:0});H("staggerTo,staggerFrom,staggerFromTo",function(l){V[l]=function(){var t=new j,e=He.call(arguments,0);return e.splice(l==="staggerFromTo"?5:4,0,0),t[l].apply(t,e)}});var mi=function(t,e,i){return t[e]=i},xr=function(t,e,i){return t[e](i)},Pn=function(t,e,i,r){return t[e](r.fp,i)},On=function(t,e,i){return t.setAttribute(e,i)},Re=function(t,e){return L(t[e])?xr:Oe(t[e])&&t.setAttribute?On:mi},vr=function(t,e){return e.set(e.t,e.p,Math.round((e.s+e.c*t)*1e6)/1e6,e)},Mn=function(t,e){return e.set(e.t,e.p,!!(e.s+e.c*t),e)},gi=function(t,e){var i=e._pt,r="";if(!t&&e.b)r=e.b;else if(t===1&&e.e)r=e.e;else{for(;i;)r=i.p+(i.m?i.m(i.s+i.c*t):Math.round((i.s+i.c*t)*1e4)/1e4)+r,i=i._next;r+=e.c}e.set(e.t,e.p,r,e)},xi=function(t,e){for(var i=e._pt;i;)i.r(t,i.d),i=i._next},Dn=function(t,e,i,r){for(var n=this._pt,s;n;)s=n._next,n.p===r&&n.modifier(t,e,i),n=s},zn=function(t){for(var e=this._pt,i,r;e;)r=e._next,e.p===t&&!e.op||e.op===t?De(this,e,"_pt"):e.dep||(i=1),e=r;return!i},En=function(t,e,i,r){r.mSet(t,e,r.m.call(r.tween,i,r.mt),r)},vi=function(t){for(var e=t._pt,i,r,n,s;e;){for(i=e._next,r=n;r&&r.pr>e.pr;)r=r._next;(e._prev=r?r._prev:s)?e._prev._next=e:n=e,(e._next=r)?r._prev=e:s=e,e=i}t._pt=n},Z=function(){function l(e,i,r,n,s,o,u,a,c){this.t=i,this.s=n,this.c=s,this.p=r,this.r=o||vr,this.d=u||this,this.set=a||mi,this.pr=c||0,this._next=e,e&&(e._prev=this)}var t=l.prototype;return t.modifier=function(i,r,n){this.mSet=this.mSet||this.set,this.set=En,this.m=i,this.mt=n,this.tween=r},l}();H(ai+"parent,duration,ease,delay,overwrite,runBackwards,startAt,yoyo,immediateRender,repeat,repeatDelay,data,paused,reversed,lazy,callbackScope,stringFilter,id,yoyoEase,stagger,inherit,repeatRefresh,keyframes,autoRevert,scrollTrigger,easeReverse",function(l){return oi[l]=1});nt.TweenMax=nt.TweenLite=V;nt.TimelineLite=nt.TimelineMax=j;E=new j({sortChildren:!1,defaults:fe,autoRemoveChildren:!0,id:"root",smoothChildTiming:!0});et.stringFilter=fi;var Lt=[],we={},Rn=[],Wi=0,Fn=0,We=function(t){return(we[t]||Rn).map(function(e){return e()})},ti=function(){var t=Date.now(),e=[];t-Wi>2&&(We("matchMediaInit"),Lt.forEach(function(i){var r=i.queries,n=i.conditions,s,o,u,a;for(o in r)s=ft.matchMedia(r[o]).matches,s&&(u=1),s!==n[o]&&(n[o]=s,a=1);a&&(i.revert(),u&&e.push(i))}),We("matchMediaRevert"),e.forEach(function(i){return i.onMatch(i,function(r){return i.add(null,r)})}),Wi=t,We("matchMedia"))},br=function(){function l(e,i){this.selector=i&&Ze(i),this.data=[],this._r=[],this.isReverted=!1,this.id=Fn++,e&&this.add(e)}var t=l.prototype;return t.add=function(i,r,n){L(i)&&(n=r,r=i,i=L);var s=this,o=function(){var a=D,c=s.selector,h;return a&&a!==s&&a.data.push(s),n&&(s.selector=Ze(n)),D=s,h=r.apply(s,arguments),L(h)&&s._r.push(h),D=a,s.selector=c,s.isReverted=!1,h};return s.last=o,i===L?o(s,function(u){return s.add(null,u)}):i?s[i]=o:o},t.ignore=function(i){var r=D;D=null,i(this),D=r},t.getTweens=function(){var i=[];return this.data.forEach(function(r){return r instanceof l?i.push.apply(i,r.getTweens()):r instanceof V&&!(r.parent&&r.parent.data==="nested")&&i.push(r)}),i},t.clear=function(){this._r.length=this.data.length=0},t.kill=function(i,r){var n=this;if(i?function(){for(var o=n.getTweens(),u=n.data.length,a;u--;)a=n.data[u],a.data==="isFlip"&&(a.revert(),a.getChildren(!0,!0,!1).forEach(function(c){return o.splice(o.indexOf(c),1)}));for(o.map(function(c){return{g:c._dur||c._delay||c._sat&&!c._sat.vars.immediateRender?c.globalTime(0):-1/0,t:c}}).sort(function(c,h){return h.g-c.g||-1/0}).forEach(function(c){return c.t.revert(i)}),u=n.data.length;u--;)a=n.data[u],a instanceof j?a.data!=="nested"&&(a.scrollTrigger&&a.scrollTrigger.revert(),a.kill()):!(a instanceof V)&&a.revert&&a.revert(i);n._r.forEach(function(c){return c(i,n)}),n.isReverted=!0}():this.data.forEach(function(o){return o.kill&&o.kill()}),this.clear(),r)for(var s=Lt.length;s--;)Lt[s].id===this.id&&Lt.splice(s,1)},t.revert=function(i){this.kill(i||{})},l}(),Bn=function(){function l(e){this.contexts=[],this.scope=e,D&&D.data.push(this)}var t=l.prototype;return t.add=function(i,r,n){dt(i)||(i={matches:i});var s=new br(0,n||this.scope),o=s.conditions={},u,a,c;D&&!s.selector&&(s.selector=D.selector),this.contexts.push(s),r=s.add("onMatch",r),s.queries=i;for(a in i)a==="all"?c=1:(u=ft.matchMedia(i[a]),u&&(Lt.indexOf(s)<0&&Lt.push(s),(o[a]=u.matches)&&(c=1),u.addListener?u.addListener(ti):u.addEventListener("change",ti)));return c&&r(s,function(h){return s.add(null,h)}),this},t.revert=function(i){this.kill(i||{})},t.kill=function(i){this.contexts.forEach(function(r){return r.kill(i,!0)})},l}(),Pe={registerPlugin:function(){for(var t=arguments.length,e=new Array(t),i=0;i<t;i++)e[i]=arguments[i];e.forEach(function(r){return hr(r)})},timeline:function(t){return new j(t)},getTweensOf:function(t,e){return E.getTweensOf(t,e)},getProperty:function(t,e,i,r){W(t)&&(t=ct(t)[0]);var n=St(t||{}).get,s=i?Ji:Ki;return i==="native"&&(i=""),t&&(e?s((K[e]&&K[e].get||n)(t,e,i,r)):function(o,u,a){return s((K[o]&&K[o].get||n)(t,o,u,a))})},quickSetter:function(t,e,i){if(t=ct(t),t.length>1){var r=t.map(function(c){return $.quickSetter(c,e,i)}),n=r.length;return function(c){for(var h=n;h--;)r[h](c)}}t=t[0]||{};var s=K[e],o=St(t),u=o.harness&&(o.harness.aliases||{})[e]||e,a=s?function(c){var h=new s;jt._pt=0,h.init(t,i?c+i:c,jt,0,[t]),h.render(1,h),jt._pt&&xi(1,jt)}:o.set(t,u);return s?a:function(c){return a(t,u,i?c+i:c,o,1)}},quickTo:function(t,e,i){var r,n=$.to(t,st((r={},r[e]="+=0.1",r.paused=!0,r.stagger=0,r),i||{})),s=function(u,a,c){return n.resetTo(e,u,a,c)};return s.tween=n,s},isTweening:function(t){return E.getTweensOf(t,!0).length>0},defaults:function(t){return t&&t.ease&&(t.ease=Bt(t.ease,fe.ease)),Ni(fe,t||{})},config:function(t){return Ni(et,t||{})},registerEffect:function(t){var e=t.name,i=t.effect,r=t.plugins,n=t.defaults,s=t.extendTimeline;(r||"").split(",").forEach(function(o){return o&&!K[o]&&!nt[o]&&he(e+" effect requires "+o+" plugin.")}),Ie[e]=function(o,u,a){return i(ct(o),st(u||{},n),a)},s&&(j.prototype[e]=function(o,u,a){return this.add(Ie[e](o,dt(u)?u:(a=u)&&{},this),a)})},registerEase:function(t,e){C[t]=Bt(e)},parseEase:function(t,e){return arguments.length?Bt(t,e):C},getById:function(t){return E.getById(t)},exportRoot:function(t,e){t===void 0&&(t={});var i=new j(t),r,n;for(i.smoothChildTiming=tt(t.smoothChildTiming),E.remove(i),i._dp=0,i._time=i._tTime=E._time,r=E._first;r;)n=r._next,(e||!(!r._dur&&r instanceof V&&r.vars.onComplete===r._targets[0]))&&ht(i,r,r._start-r._delay),r=n;return ht(E,i,0),i},context:function(t,e){return t?new br(t,e):D},matchMedia:function(t){return new Bn(t)},matchMediaRefresh:function(){return Lt.forEach(function(t){var e=t.conditions,i,r;for(r in e)e[r]&&(e[r]=!1,i=1);i&&t.revert()})||ti()},addEventListener:function(t,e){var i=we[t]||(we[t]=[]);~i.indexOf(e)||i.push(e)},removeEventListener:function(t,e){var i=we[t],r=i&&i.indexOf(e);r>=0&&i.splice(r,1)},utils:{wrap:dn,wrapYoyo:_n,distribute:or,random:lr,snap:ar,normalize:hn,getUnit:G,clamp:ln,splitColor:dr,toArray:ct,selector:Ze,mapRange:cr,pipe:cn,unitize:fn,interpolate:pn,shuffle:sr},install:Qi,effects:Ie,ticker:J,updateRoot:j.updateRoot,plugins:K,globalTimeline:E,core:{PropTween:Z,globals:$i,Tween:V,Timeline:j,Animation:pe,getCache:St,_removeLinkedListItem:De,reverting:function(){return q},context:function(t){return t&&D&&(D.data.push(t),t._ctx=D),D},suppressOverwrites:function(t){return ei=t}}};H("to,from,fromTo,delayedCall,set,killTweensOf",function(l){return Pe[l]=V[l]});J.add(j.updateRoot);jt=Pe.to({},{duration:0});var Ln=function(t,e){for(var i=t._pt;i&&i.p!==e&&i.op!==e&&i.fp!==e;)i=i._next;return i},Nn=function(t,e){var i=t._targets,r,n,s;for(r in e)for(n=i.length;n--;)s=t._ptLookup[n][r],s&&(s=s.d)&&(s._pt&&(s=Ln(s,r)),s&&s.modifier&&s.modifier(e[r],t,i[n],r))},Xe=function(t,e){return{name:t,headless:1,rawVars:1,init:function(r,n,s){s._onInit=function(o){var u,a;if(W(n)&&(u={},H(n,function(c){return u[c]=1}),n=u),e){u={};for(a in n)u[a]=e(n[a]);n=u}Nn(o,n)}}}},$=Pe.registerPlugin({name:"attr",init:function(t,e,i,r,n){var s,o,u;this.tween=i;for(s in e)u=t.getAttribute(s)||"",o=this.add(t,"setAttribute",(u||0)+"",e[s],r,n,0,0,s),o.op=s,o.b=u,this._props.push(s)},render:function(t,e){for(var i=e._pt;i;)q?i.set(i.t,i.p,i.b,i):i.r(t,i.d),i=i._next}},{name:"endArray",headless:1,init:function(t,e){for(var i=e.length;i--;)this.add(t,i,t[i]||0,e[i],0,0,0,0,0,1)}},Xe("roundProps",Ke),Xe("modifiers"),Xe("snap",ar))||Pe;V.version=j.version=$.version="3.15.0";ji=1;ii()&&Zt();var In=C.Power0,Un=C.Power1,Vn=C.Power2,Yn=C.Power3,Wn=C.Power4,Xn=C.Linear,qn=C.Quad,Gn=C.Cubic,jn=C.Quart,Qn=C.Quint,$n=C.Strong,Hn=C.Elastic,Zn=C.Back,Kn=C.SteppedEase,Jn=C.Bounce,ts=C.Sine,es=C.Expo,is=C.Circ;var kr,Pt,te,Si,Xt,rs,yr,Ai,ns=function(){return typeof window<"u"},kt={},Wt=180/Math.PI,ee=Math.PI/180,Jt=Math.atan2,wr=1e8,Ci=/([A-Z])/g,ss=/(left|right|width|margin|padding|x)/i,os=/[\s,\(]\S/,_t={autoAlpha:"opacity,visibility",scale:"scaleX,scaleY",alpha:"opacity"},ki=function(t,e){return e.set(e.t,e.p,Math.round((e.s+e.c*t)*1e4)/1e4+e.u,e)},as=function(t,e){return e.set(e.t,e.p,t===1?e.e:Math.round((e.s+e.c*t)*1e4)/1e4+e.u,e)},ls=function(t,e){return e.set(e.t,e.p,t?Math.round((e.s+e.c*t)*1e4)/1e4+e.u:e.b,e)},us=function(t,e){return e.set(e.t,e.p,t===1?e.e:t?Math.round((e.s+e.c*t)*1e4)/1e4+e.u:e.b,e)},cs=function(t,e){var i=e.s+e.c*t;e.set(e.t,e.p,~~(i+(i<0?-.5:.5))+e.u,e)},Dr=function(t,e){return e.set(e.t,e.p,t?e.e:e.b,e)},zr=function(t,e){return e.set(e.t,e.p,t!==1?e.b:e.e,e)},fs=function(t,e,i){return t.style[e]=i},hs=function(t,e,i){return t.style.setProperty(e,i)},ds=function(t,e,i){return t._gsap[e]=i},_s=function(t,e,i){return t._gsap.scaleX=t._gsap.scaleY=i},ps=function(t,e,i,r,n){var s=t._gsap;s.scaleX=s.scaleY=i,s.renderTransform(n,s)},ms=function(t,e,i,r,n){var s=t._gsap;s[e]=i,s.renderTransform(n,s)},R="transform",it=R+"Origin",gs=function l(t,e){var i=this,r=this.target,n=r.style,s=r._gsap;if(t in kt&&n){if(this.tfm=this.tfm||{},t!=="transform")t=_t[t]||t,~t.indexOf(",")?t.split(",").forEach(function(o){return i.tfm[o]=bt(r,o)}):this.tfm[t]=s.x?s[t]:bt(r,t),t===it&&(this.tfm.zOrigin=s.zOrigin);else return _t.transform.split(",").forEach(function(o){return l.call(i,o,e)});if(this.props.indexOf(R)>=0)return;s.svg&&(this.svgo=r.getAttribute("data-svg-origin"),this.props.push(it,e,"")),t=R}(n||e)&&this.props.push(t,e,n[t])},Er=function(t){t.translate&&(t.removeProperty("translate"),t.removeProperty("scale"),t.removeProperty("rotate"))},xs=function(){var t=this.props,e=this.target,i=e.style,r=e._gsap,n,s;for(n=0;n<t.length;n+=3)t[n+1]?t[n+1]===2?e[t[n]](t[n+2]):e[t[n]]=t[n+2]:t[n+2]?i[t[n]]=t[n+2]:i.removeProperty(t[n].substr(0,2)==="--"?t[n]:t[n].replace(Ci,"-$1").toLowerCase());if(this.tfm){for(s in this.tfm)r[s]=this.tfm[s];r.svg&&(r.renderTransform(),e.setAttribute("data-svg-origin",this.svgo||"")),n=Ai(),(!n||!n.isStart)&&!i[R]&&(Er(i),r.zOrigin&&i[it]&&(i[it]+=" "+r.zOrigin+"px",r.zOrigin=0,r.renderTransform()),r.uncache=1)}},Rr=function(t,e){var i={target:t,props:[],revert:xs,save:gs};return t._gsap||$.core.getCache(t),e&&t.style&&t.nodeType&&e.split(",").forEach(function(r){return i.save(r)}),i},Fr,yi=function(t,e){var i=Pt.createElementNS?Pt.createElementNS((e||"http://www.w3.org/1999/xhtml").replace(/^https/,"http"),t):Pt.createElement(t);return i&&i.style?i:Pt.createElement(t)},ot=function l(t,e,i){var r=getComputedStyle(t);return r[e]||r.getPropertyValue(e.replace(Ci,"-$1").toLowerCase())||r.getPropertyValue(e)||!i&&l(t,ie(e)||e,1)||""},Tr="O,Moz,ms,Ms,Webkit".split(","),ie=function(t,e,i){var r=e||Xt,n=r.style,s=5;if(t in n&&!i)return t;for(t=t.charAt(0).toUpperCase()+t.substr(1);s--&&!(Tr[s]+t in n););return s<0?null:(s===3?"ms":s>=0?Tr[s]:"")+t},wi=function(){ns()&&window.document&&(kr=window,Pt=kr.document,te=Pt.documentElement,Xt=yi("div")||{style:{}},rs=yi("div"),R=ie(R),it=R+"Origin",Xt.style.cssText="border-width:0;line-height:0;position:absolute;padding:0",Fr=!!ie("perspective"),Ai=$.core.reverting,Si=1)},Sr=function(t){var e=t.ownerSVGElement,i=yi("svg",e&&e.getAttribute("xmlns")||"http://www.w3.org/2000/svg"),r=t.cloneNode(!0),n;r.style.display="block",i.appendChild(r),te.appendChild(i);try{n=r.getBBox()}catch{}return i.removeChild(r),te.removeChild(i),n},Ar=function(t,e){for(var i=e.length;i--;)if(t.hasAttribute(e[i]))return t.getAttribute(e[i])},Br=function(t){var e,i;try{e=t.getBBox()}catch{e=Sr(t),i=1}return e&&(e.width||e.height)||i||(e=Sr(t)),e&&!e.width&&!e.x&&!e.y?{x:+Ar(t,["x","cx","x1"])||0,y:+Ar(t,["y","cy","y1"])||0,width:0,height:0}:e},Lr=function(t){return!!(t.getCTM&&(!t.parentNode||t.ownerSVGElement)&&Br(t))},Mt=function(t,e){if(e){var i=t.style,r;e in kt&&e!==it&&(e=R),i.removeProperty?(r=e.substr(0,2),(r==="ms"||e.substr(0,6)==="webkit")&&(e="-"+e),i.removeProperty(r==="--"?e:e.replace(Ci,"-$1").toLowerCase())):i.removeAttribute(e)}},Ot=function(t,e,i,r,n,s){var o=new Z(t._pt,e,i,0,1,s?zr:Dr);return t._pt=o,o.b=r,o.e=n,t._props.push(i),o},Cr={deg:1,rad:1,turn:1},vs={grid:1,flex:1},Dt=function l(t,e,i,r){var n=parseFloat(i)||0,s=(i+"").trim().substr((n+"").length)||"px",o=Xt.style,u=ss.test(e),a=t.tagName.toLowerCase()==="svg",c=(a?"client":"offset")+(u?"Width":"Height"),h=100,_=r==="px",d=r==="%",m,f,p,g;if(r===s||!n||Cr[r]||Cr[s])return n;if(s!=="px"&&!_&&(n=l(t,e,i,"px")),g=t.getCTM&&Lr(t),(d||s==="%")&&(kt[e]||~e.indexOf("adius")))return m=g?t.getBBox()[u?"width":"height"]:t[c],N(d?n/m*h:n/100*m);if(o[u?"width":"height"]=h+(_?s:r),f=r!=="rem"&&~e.indexOf("adius")||r==="em"&&t.appendChild&&!a?t:t.parentNode,g&&(f=(t.ownerSVGElement||{}).parentNode),(!f||f===Pt||!f.appendChild)&&(f=Pt.body),p=f._gsap,p&&d&&p.width&&u&&p.time===J.time&&!p.uncache)return N(n/p.width*h);if(d&&(e==="height"||e==="width")){var x=t.style[e];t.style[e]=h+r,m=t[c],x?t.style[e]=x:Mt(t,e)}else(d||s==="%")&&!vs[ot(f,"display")]&&(o.position=ot(t,"position")),f===t&&(o.position="static"),f.appendChild(Xt),m=Xt[c],f.removeChild(Xt),o.position="absolute";return u&&d&&(p=St(f),p.time=J.time,p.width=f[c]),N(_?m*n/h:m&&n?h/m*n:0)},bt=function(t,e,i,r){var n;return Si||wi(),e in _t&&e!=="transform"&&(e=_t[e],~e.indexOf(",")&&(e=e.split(",")[0])),kt[e]&&e!=="transform"?(n=ve(t,r),n=e!=="transformOrigin"?n[e]:n.svg?n.origin:Be(ot(t,it))+" "+n.zOrigin+"px"):(n=t.style[e],(!n||n==="auto"||r||~(n+"").indexOf("calc("))&&(n=Fe[e]&&Fe[e](t,e,i)||ot(t,e)||ui(t,e)||(e==="opacity"?1:0))),i&&!~(n+"").trim().indexOf(" ")?Dt(t,e,n,i)+i:n},bs=function(t,e,i,r){if(!i||i==="none"){var n=ie(e,t,1),s=n&&ot(t,n,1);s&&s!==i?(e=n,i=s):e==="borderColor"&&(i=ot(t,"borderTopColor"))}var o=new Z(this._pt,t.style,e,0,1,gi),u=0,a=0,c,h,_,d,m,f,p,g,x,b,k,v;if(o.b=i,o.e=r,i+="",r+="",r.substring(0,6)==="var(--"&&(r=ot(t,r.substring(4,r.indexOf(")")))),r==="auto"&&(f=t.style[e],t.style[e]=r,r=ot(t,e)||r,f?t.style[e]=f:Mt(t,e)),c=[i,r],fi(c),i=c[0],r=c[1],_=i.match(Nt)||[],v=r.match(Nt)||[],v.length){for(;h=Nt.exec(r);)p=h[0],x=r.substring(u,h.index),m?m=(m+1)%5:(x.substr(-5)==="rgba("||x.substr(-5)==="hsla(")&&(m=1),p!==(f=_[a++]||"")&&(d=parseFloat(f)||0,k=f.substr((d+"").length),p.charAt(1)==="="&&(p=It(d,p)+k),g=parseFloat(p),b=p.substr((g+"").length),u=Nt.lastIndex-b.length,b||(b=b||et.units[e]||k,u===r.length&&(r+=b,o.e+=b)),k!==b&&(d=Dt(t,e,f,b)||0),o._pt={_next:o._pt,p:x||a===1?x:",",s:d,c:g-d,m:m&&m<4||e==="zIndex"?Math.round:0});o.c=u<r.length?r.substring(u,r.length):""}else o.r=e==="display"&&r==="none"?zr:Dr;return ni.test(r)&&(o.e=0),this._pt=o,o},Pr={top:"0%",bottom:"100%",left:"0%",right:"100%",center:"50%"},ks=function(t){var e=t.split(" "),i=e[0],r=e[1]||"50%";return(i==="top"||i==="bottom"||r==="left"||r==="right")&&(t=i,i=r,r=t),e[0]=Pr[i]||i,e[1]=Pr[r]||r,e.join(" ")},ys=function(t,e){if(e.tween&&e.tween._time===e.tween._dur){var i=e.t,r=i.style,n=e.u,s=i._gsap,o,u,a;if(n==="all"||n===!0)r.cssText="",u=1;else for(n=n.split(","),a=n.length;--a>-1;)o=n[a],kt[o]&&(u=1,o=o==="transformOrigin"?it:R),Mt(i,o);u&&(Mt(i,R),s&&(s.svg&&i.removeAttribute("transform"),r.scale=r.rotate=r.translate="none",ve(i,1),s.uncache=1,Er(r)))}},Fe={clearProps:function(t,e,i,r,n){if(n.data!=="isFromStart"){var s=t._pt=new Z(t._pt,e,i,0,0,ys);return s.u=r,s.pr=-10,s.tween=n,t._props.push(i),1}}},xe=[1,0,0,1,0,0],Nr={},Ir=function(t){return t==="matrix(1, 0, 0, 1, 0, 0)"||t==="none"||!t},Or=function(t){var e=ot(t,R);return Ir(e)?xe:e.substr(7).match(ri).map(N)},Pi=function(t,e){var i=t._gsap||St(t),r=t.style,n=Or(t),s,o,u,a;return i.svg&&t.getAttribute("transform")?(u=t.transform.baseVal.consolidate().matrix,n=[u.a,u.b,u.c,u.d,u.e,u.f],n.join(",")==="1,0,0,1,0,0"?xe:n):(n===xe&&!t.offsetParent&&t!==te&&!i.svg&&(u=r.display,r.display="block",s=t.parentNode,(!s||!t.offsetParent&&!t.getBoundingClientRect().width)&&(a=1,o=t.nextElementSibling,te.appendChild(t)),n=Or(t),u?r.display=u:Mt(t,"display"),a&&(o?s.insertBefore(t,o):s?s.appendChild(t):te.removeChild(t))),e&&n.length>6?[n[0],n[1],n[4],n[5],n[12],n[13]]:n)},Ti=function(t,e,i,r,n,s){var o=t._gsap,u=n||Pi(t,!0),a=o.xOrigin||0,c=o.yOrigin||0,h=o.xOffset||0,_=o.yOffset||0,d=u[0],m=u[1],f=u[2],p=u[3],g=u[4],x=u[5],b=e.split(" "),k=parseFloat(b[0])||0,v=parseFloat(b[1])||0,S,y,T,w;i?u!==xe&&(y=d*p-m*f)&&(T=k*(p/y)+v*(-f/y)+(f*x-p*g)/y,w=k*(-m/y)+v*(d/y)-(d*x-m*g)/y,k=T,v=w):(S=Br(t),k=S.x+(~b[0].indexOf("%")?k/100*S.width:k),v=S.y+(~(b[1]||b[0]).indexOf("%")?v/100*S.height:v)),r||r!==!1&&o.smooth?(g=k-a,x=v-c,o.xOffset=h+(g*d+x*f)-g,o.yOffset=_+(g*m+x*p)-x):o.xOffset=o.yOffset=0,o.xOrigin=k,o.yOrigin=v,o.smooth=!!r,o.origin=e,o.originIsAbsolute=!!i,t.style[it]="0px 0px",s&&(Ot(s,o,"xOrigin",a,k),Ot(s,o,"yOrigin",c,v),Ot(s,o,"xOffset",h,o.xOffset),Ot(s,o,"yOffset",_,o.yOffset)),t.setAttribute("data-svg-origin",k+" "+v)},ve=function(t,e){var i=t._gsap||new hi(t);if("x"in i&&!e&&!i.uncache)return i;var r=t.style,n=i.scaleX<0,s="px",o="deg",u=getComputedStyle(t),a=ot(t,it)||"0",c,h,_,d,m,f,p,g,x,b,k,v,S,y,T,w,A,I,F,M,B,X,Y,U,at,qt,re,ne,zt,Mi,mt,Et;return c=h=_=f=p=g=x=b=k=0,d=m=1,i.svg=!!(t.getCTM&&Lr(t)),u.translate&&((u.translate!=="none"||u.scale!=="none"||u.rotate!=="none")&&(r[R]=(u.translate!=="none"?"translate3d("+(u.translate+" 0 0").split(" ").slice(0,3).join(", ")+") ":"")+(u.rotate!=="none"?"rotate("+u.rotate+") ":"")+(u.scale!=="none"?"scale("+u.scale.split(" ").join(",")+") ":"")+(u[R]!=="none"?u[R]:"")),r.scale=r.rotate=r.translate="none"),y=Pi(t,i.svg),i.svg&&(i.uncache?(at=t.getBBox(),a=i.xOrigin-at.x+"px "+(i.yOrigin-at.y)+"px",U=""):U=!e&&t.getAttribute("data-svg-origin"),Ti(t,U||a,!!U||i.originIsAbsolute,i.smooth!==!1,y)),v=i.xOrigin||0,S=i.yOrigin||0,y!==xe&&(I=y[0],F=y[1],M=y[2],B=y[3],c=X=y[4],h=Y=y[5],y.length===6?(d=Math.sqrt(I*I+F*F),m=Math.sqrt(B*B+M*M),f=I||F?Jt(F,I)*Wt:0,x=M||B?Jt(M,B)*Wt+f:0,x&&(m*=Math.abs(Math.cos(x*ee))),i.svg&&(c-=v-(v*I+S*M),h-=S-(v*F+S*B))):(Et=y[6],Mi=y[7],re=y[8],ne=y[9],zt=y[10],mt=y[11],c=y[12],h=y[13],_=y[14],T=Jt(Et,zt),p=T*Wt,T&&(w=Math.cos(-T),A=Math.sin(-T),U=X*w+re*A,at=Y*w+ne*A,qt=Et*w+zt*A,re=X*-A+re*w,ne=Y*-A+ne*w,zt=Et*-A+zt*w,mt=Mi*-A+mt*w,X=U,Y=at,Et=qt),T=Jt(-M,zt),g=T*Wt,T&&(w=Math.cos(-T),A=Math.sin(-T),U=I*w-re*A,at=F*w-ne*A,qt=M*w-zt*A,mt=B*A+mt*w,I=U,F=at,M=qt),T=Jt(F,I),f=T*Wt,T&&(w=Math.cos(T),A=Math.sin(T),U=I*w+F*A,at=X*w+Y*A,F=F*w-I*A,Y=Y*w-X*A,I=U,X=at),p&&Math.abs(p)+Math.abs(f)>359.9&&(p=f=0,g=180-g),d=N(Math.sqrt(I*I+F*F+M*M)),m=N(Math.sqrt(Y*Y+Et*Et)),T=Jt(X,Y),x=Math.abs(T)>2e-4?T*Wt:0,k=mt?1/(mt<0?-mt:mt):0),i.svg&&(U=t.getAttribute("transform"),i.forceCSS=t.setAttribute("transform","")||!Ir(ot(t,R)),U&&t.setAttribute("transform",U))),Math.abs(x)>90&&Math.abs(x)<270&&(n?(d*=-1,x+=f<=0?180:-180,f+=f<=0?180:-180):(m*=-1,x+=x<=0?180:-180)),e=e||i.uncache,i.x=c-((i.xPercent=c&&(!e&&i.xPercent||(Math.round(t.offsetWidth/2)===Math.round(-c)?-50:0)))?t.offsetWidth*i.xPercent/100:0)+s,i.y=h-((i.yPercent=h&&(!e&&i.yPercent||(Math.round(t.offsetHeight/2)===Math.round(-h)?-50:0)))?t.offsetHeight*i.yPercent/100:0)+s,i.z=_+s,i.scaleX=N(d),i.scaleY=N(m),i.rotation=N(f)+o,i.rotationX=N(p)+o,i.rotationY=N(g)+o,i.skewX=x+o,i.skewY=b+o,i.transformPerspective=k+s,(i.zOrigin=parseFloat(a.split(" ")[2])||!e&&i.zOrigin||0)&&(r[it]=Be(a)),i.xOffset=i.yOffset=0,i.force3D=et.force3D,i.renderTransform=i.svg?Ts:Fr?Ur:ws,i.uncache=0,i},Be=function(t){return(t=t.split(" "))[0]+" "+t[1]},bi=function(t,e,i){var r=G(e);return N(parseFloat(e)+parseFloat(Dt(t,"x",i+"px",r)))+r},ws=function(t,e){e.z="0px",e.rotationY=e.rotationX="0deg",e.force3D=0,Ur(t,e)},Vt="0deg",ge="0px",Yt=") ",Ur=function(t,e){var i=e||this,r=i.xPercent,n=i.yPercent,s=i.x,o=i.y,u=i.z,a=i.rotation,c=i.rotationY,h=i.rotationX,_=i.skewX,d=i.skewY,m=i.scaleX,f=i.scaleY,p=i.transformPerspective,g=i.force3D,x=i.target,b=i.zOrigin,k="",v=g==="auto"&&t&&t!==1||g===!0;if(b&&(h!==Vt||c!==Vt)){var S=parseFloat(c)*ee,y=Math.sin(S),T=Math.cos(S),w;S=parseFloat(h)*ee,w=Math.cos(S),s=bi(x,s,y*w*-b),o=bi(x,o,-Math.sin(S)*-b),u=bi(x,u,T*w*-b+b)}p!==ge&&(k+="perspective("+p+Yt),(r||n)&&(k+="translate("+r+"%, "+n+"%) "),(v||s!==ge||o!==ge||u!==ge)&&(k+=u!==ge||v?"translate3d("+s+", "+o+", "+u+") ":"translate("+s+", "+o+Yt),a!==Vt&&(k+="rotate("+a+Yt),c!==Vt&&(k+="rotateY("+c+Yt),h!==Vt&&(k+="rotateX("+h+Yt),(_!==Vt||d!==Vt)&&(k+="skew("+_+", "+d+Yt),(m!==1||f!==1)&&(k+="scale("+m+", "+f+Yt),x.style[R]=k||"translate(0, 0)"},Ts=function(t,e){var i=e||this,r=i.xPercent,n=i.yPercent,s=i.x,o=i.y,u=i.rotation,a=i.skewX,c=i.skewY,h=i.scaleX,_=i.scaleY,d=i.target,m=i.xOrigin,f=i.yOrigin,p=i.xOffset,g=i.yOffset,x=i.forceCSS,b=parseFloat(s),k=parseFloat(o),v,S,y,T,w;u=parseFloat(u),a=parseFloat(a),c=parseFloat(c),c&&(c=parseFloat(c),a+=c,u+=c),u||a?(u*=ee,a*=ee,v=Math.cos(u)*h,S=Math.sin(u)*h,y=Math.sin(u-a)*-_,T=Math.cos(u-a)*_,a&&(c*=ee,w=Math.tan(a-c),w=Math.sqrt(1+w*w),y*=w,T*=w,c&&(w=Math.tan(c),w=Math.sqrt(1+w*w),v*=w,S*=w)),v=N(v),S=N(S),y=N(y),T=N(T)):(v=h,T=_,S=y=0),(b&&!~(s+"").indexOf("px")||k&&!~(o+"").indexOf("px"))&&(b=Dt(d,"x",s,"px"),k=Dt(d,"y",o,"px")),(m||f||p||g)&&(b=N(b+m-(m*v+f*y)+p),k=N(k+f-(m*S+f*T)+g)),(r||n)&&(w=d.getBBox(),b=N(b+r/100*w.width),k=N(k+n/100*w.height)),w="matrix("+v+","+S+","+y+","+T+","+b+","+k+")",d.setAttribute("transform",w),x&&(d.style[R]=w)},Ss=function(t,e,i,r,n){var s=360,o=W(n),u=parseFloat(n)*(o&&~n.indexOf("rad")?Wt:1),a=u-r,c=r+a+"deg",h,_;return o&&(h=n.split("_")[1],h==="short"&&(a%=s,a!==a%(s/2)&&(a+=a<0?s:-s)),h==="cw"&&a<0?a=(a+s*wr)%s-~~(a/s)*s:h==="ccw"&&a>0&&(a=(a-s*wr)%s-~~(a/s)*s)),t._pt=_=new Z(t._pt,e,i,r,a,as),_.e=c,_.u="deg",t._props.push(i),_},Mr=function(t,e){for(var i in e)t[i]=e[i];return t},As=function(t,e,i){var r=Mr({},i._gsap),n="perspective,force3D,transformOrigin,svgOrigin",s=i.style,o,u,a,c,h,_,d,m;r.svg?(a=i.getAttribute("transform"),i.setAttribute("transform",""),s[R]=e,o=ve(i,1),Mt(i,R),i.setAttribute("transform",a)):(a=getComputedStyle(i)[R],s[R]=e,o=ve(i,1),s[R]=a);for(u in kt)a=r[u],c=o[u],a!==c&&n.indexOf(u)<0&&(d=G(a),m=G(c),h=d!==m?Dt(i,u,a,m):parseFloat(a),_=parseFloat(c),t._pt=new Z(t._pt,o,u,h,_-h,ki),t._pt.u=m||0,t._props.push(u));Mr(o,r)};H("padding,margin,Width,Radius",function(l,t){var e="Top",i="Right",r="Bottom",n="Left",s=(t<3?[e,i,r,n]:[e+n,e+i,r+i,r+n]).map(function(o){return t<2?l+o:"border"+o+l});Fe[t>1?"border"+l:l]=function(o,u,a,c,h){var _,d;if(arguments.length<4)return _=s.map(function(m){return bt(o,m,a)}),d=_.join(" "),d.split(_[0]).length===5?_[0]:d;_=(c+"").split(" "),d={},s.forEach(function(m,f){return d[m]=_[f]=_[f]||_[(f-1)/2|0]}),o.init(u,d,h)}});var Oi={name:"css",register:wi,targetTest:function(t){return t.style&&t.nodeType},init:function(t,e,i,r,n){var s=this._props,o=t.style,u=i.vars.startAt,a,c,h,_,d,m,f,p,g,x,b,k,v,S,y,T,w;Si||wi(),this.styles=this.styles||Rr(t),T=this.styles.props,this.tween=i;for(f in e)if(f!=="autoRound"&&(c=e[f],!(K[f]&&_i(f,e,i,r,t,n)))){if(d=typeof c,m=Fe[f],d==="function"&&(c=c.call(i,r,t,n),d=typeof c),d==="string"&&~c.indexOf("random(")&&(c=Kt(c)),m)m(this,t,f,c,i)&&(y=1);else if(f.substr(0,2)==="--")a=(getComputedStyle(t).getPropertyValue(f)+"").trim(),c+="",xt.lastIndex=0,xt.test(a)||(p=G(a),g=G(c),g?p!==g&&(a=Dt(t,f,a,g)+g):p&&(c+=p)),this.add(o,"setProperty",a,c,r,n,0,0,f),s.push(f),T.push(f,0,o[f]);else if(d!=="undefined"){if(u&&f in u?(a=typeof u[f]=="function"?u[f].call(i,r,t,n):u[f],W(a)&&~a.indexOf("random(")&&(a=Kt(a)),G(a+"")||a==="auto"||(a+=et.units[f]||G(bt(t,f))||""),(a+"").charAt(1)==="="&&(a=bt(t,f))):a=bt(t,f),_=parseFloat(a),x=d==="string"&&c.charAt(1)==="="&&c.substr(0,2),x&&(c=c.substr(2)),h=parseFloat(c),f in _t&&(f==="autoAlpha"&&(_===1&&bt(t,"visibility")==="hidden"&&h&&(_=0),T.push("visibility",0,o.visibility),Ot(this,o,"visibility",_?"inherit":"hidden",h?"inherit":"hidden",!h)),f!=="scale"&&f!=="transform"&&(f=_t[f],~f.indexOf(",")&&(f=f.split(",")[0]))),b=f in kt,b){if(this.styles.save(f),w=c,d==="string"&&c.substring(0,6)==="var(--"){if(c=ot(t,c.substring(4,c.indexOf(")"))),c.substring(0,5)==="calc("){var A=t.style.perspective;t.style.perspective=c,c=ot(t,"perspective"),A?t.style.perspective=A:Mt(t,"perspective")}h=parseFloat(c)}if(k||(v=t._gsap,v.renderTransform&&!e.parseTransform||ve(t,e.parseTransform),S=e.smoothOrigin!==!1&&v.smooth,k=this._pt=new Z(this._pt,o,R,0,1,v.renderTransform,v,0,-1),k.dep=1),f==="scale")this._pt=new Z(this._pt,v,"scaleY",v.scaleY,(x?It(v.scaleY,x+h):h)-v.scaleY||0,ki),this._pt.u=0,s.push("scaleY",f),f+="X";else if(f==="transformOrigin"){T.push(it,0,o[it]),c=ks(c),v.svg?Ti(t,c,0,S,0,this):(g=parseFloat(c.split(" ")[2])||0,g!==v.zOrigin&&Ot(this,v,"zOrigin",v.zOrigin,g),Ot(this,o,f,Be(a),Be(c)));continue}else if(f==="svgOrigin"){Ti(t,c,1,S,0,this);continue}else if(f in Nr){Ss(this,v,f,_,x?It(_,x+c):c);continue}else if(f==="smoothOrigin"){Ot(this,v,"smooth",v.smooth,c);continue}else if(f==="force3D"){v[f]=c;continue}else if(f==="transform"){As(this,c,t);continue}}else f in o||(f=ie(f)||f);if(b||(h||h===0)&&(_||_===0)&&!os.test(c)&&f in o)p=(a+"").substr((_+"").length),h||(h=0),g=G(c)||(f in et.units?et.units[f]:p),p!==g&&(_=Dt(t,f,a,g)),this._pt=new Z(this._pt,b?v:o,f,_,(x?It(_,x+h):h)-_,!b&&(g==="px"||f==="zIndex")&&e.autoRound!==!1?cs:ki),this._pt.u=g||0,b&&w!==c?(this._pt.b=a,this._pt.e=w,this._pt.r=us):p!==g&&g!=="%"&&(this._pt.b=a,this._pt.r=ls);else if(f in o)bs.call(this,t,f,a,x?x+c:c);else if(f in t)this.add(t,f,a||t[f],x?x+c:c,r,n);else if(f!=="parseTransform"){Me(f,c);continue}b||(f in o?T.push(f,0,o[f]):typeof t[f]=="function"?T.push(f,2,t[f]()):T.push(f,1,a||t[f])),s.push(f)}}y&&vi(this)},render:function(t,e){if(e.tween._time||!Ai())for(var i=e._pt;i;)i.r(t,i.d),i=i._next;else e.styles.revert()},get:bt,aliases:_t,getSetter:function(t,e,i){var r=_t[e];return r&&r.indexOf(",")<0&&(e=r),e in kt&&e!==it&&(t._gsap.x||bt(t,"x"))?i&&yr===i?e==="scale"?_s:ds:(yr=i||{})&&(e==="scale"?ps:ms):t.style&&!Oe(t.style[e])?fs:~e.indexOf("-")?hs:Re(t,e)},core:{_removeProperty:Mt,_getMatrix:Pi}};$.utils.checkPrefix=ie;$.core.getStyleSaver=Rr;(function(l,t,e,i){var r=H(l+","+t+","+e,function(n){kt[n]=1});H(t,function(n){et.units[n]="deg",Nr[n]=1}),_t[r[13]]=l+","+t,H(i,function(n){var s=n.split(":");_t[s[1]]=r[s[0]]})})("x,y,z,scale,scaleX,scaleY,xPercent,yPercent","rotation,rotationX,rotationY,skewX,skewY","transform,transformOrigin,svgOrigin,force3D,smoothOrigin,transformPerspective","0:translateX,1:translateY,2:translateZ,8:rotate,8:rotationZ,8:rotateZ,9:rotateX,10:rotateY");H("x,y,z,top,right,bottom,left,width,height,fontSize,padding,margin,perspective",function(l){et.units[l]="px"});$.registerPlugin(Oi);var pt=$.registerPlugin(Oi)||$,Ys=pt.core.Tween;function Cs(l){window.globalOmniContext||(window.globalOmniContext={currentPage:se("home")});let t={createSignal:se,effect:yt,...window.globalOmniContext},e=(...d)=>console.log("[OmniJS]",...d);t.log=e;let{navigate:i,getRouterSignal:r}=t;function n(){let d=document.documentElement,m=d.getAttribute("data-theme")==="dark"?"light":"dark";d.setAttribute("data-theme",m)}t.isMobileMenuOpen=t.createSignal(!1),t.sidebarClass=t.createSignal("responsive-sidebar w-[260px] min-w-[260px] bg-white/90 dark:bg-[#0e0e12]/85 backdrop-blur-md border-r border-black/10 dark:border-white/10 p-7 flex flex-col fixed inset-y-0 left-0 z-50 overflow-y-auto transition-colors duration-300"),t.backdropStyle=t.createSignal("display: none; opacity: 0;");function s(){t.isMobileMenuOpen.value=!t.isMobileMenuOpen.value}function o(){t.isMobileMenuOpen.value=!1}yt(()=>{let d="responsive-sidebar w-[260px] min-w-[260px] bg-white/90 dark:bg-[#0e0e12]/85 backdrop-blur-md border-r border-black/10 dark:border-white/10 p-7 flex flex-col fixed inset-y-0 left-0 z-50 overflow-y-auto transition-colors duration-300";t.sidebarClass.value=t.isMobileMenuOpen.value?d+" open":d,t.backdropStyle.value=t.isMobileMenuOpen.value?"display: block; opacity: 1; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; backdrop-filter: blur(4px); transition: opacity 0.3s;":"display: none; opacity: 0; pointer-events: none;"}),t.isTutorialsOpen=t.createSignal(!0),t.tutorialStyle=t.createSignal("max-height: 500px; opacity: 1; margin-top: 0px;"),t.arrowStyle=t.createSignal("transform: rotate(0deg); transition: transform 0.3s ease;"),t.isDeepDiveOpen=t.createSignal(!1),t.deepDiveStyle=t.createSignal("max-height: 0px; opacity: 0; margin-top: -10px; overflow: hidden;"),t.deepDiveArrowStyle=t.createSignal("transform: rotate(-90deg); transition: transform 0.3s ease;");function u(){t.isTutorialsOpen.value=!t.isTutorialsOpen.value,t.isTutorialsOpen.value?(t.tutorialStyle.value="display: flex; flex-direction: column;",t.arrowStyle.value="transform: rotate(180deg); transition: transform 0.3s ease;",typeof pt<"u"&&setTimeout(()=>{pt.fromTo(".tutorial-link",{opacity:0,x:-10},{opacity:1,x:0,stagger:.02,duration:.3,ease:"power2.out"})},10)):(t.arrowStyle.value="transform: rotate(0deg); transition: transform 0.3s ease;",typeof pt<"u"?pt.to(".tutorial-link",{opacity:0,x:-10,stagger:.01,duration:.2,onComplete:()=>{t.tutorialStyle.value="display: none;"}}):t.tutorialStyle.value="display: none;")}function a(){t.isDeepDiveOpen.value=!t.isDeepDiveOpen.value,t.isDeepDiveOpen.value?(typeof pt<"u"&&pt.to(".deepdive-link",{opacity:1,x:0,stagger:.05,duration:.3,ease:"power2.out",overwrite:!0}),t.deepDiveStyle.value="max-height: 500px; opacity: 1; margin-top: 0px;",t.deepDiveArrowStyle.value="transform: rotate(0deg); transition: transform 0.3s ease;"):(typeof pt<"u"&&pt.to(".deepdive-link",{opacity:0,x:-10,duration:.2,overwrite:!0}),t.deepDiveStyle.value="max-height: 0px; opacity: 0; margin-top: -10px; overflow: hidden;",t.deepDiveArrowStyle.value="transform: rotate(-90deg); transition: transform 0.3s ease;")}t.toggleTheme=n,t.toggleMobileMenu=s,t.closeMobileMenu=o,t.toggleTutorials=u,t.toggleDeepDives=a;let c=`
-  @media (max-width: 1023px) {
-    .responsive-sidebar {
-      transform: translateX(-100%);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .responsive-sidebar.open {
-      transform: translateX(0);
-    }
-    .responsive-main {
-      margin-left: 0 !important;
-      padding-top: 80px !important;
-      padding-left: 1.5rem !important;
-      padding-right: 1.5rem !important;
-    }
-  }
-`,h="omni-style-"+Math.abs(c.split("").reduce((d,m)=>(d=(d<<5)-d+m.charCodeAt(0),d&d),0));if(c&&!document.getElementById(h)){let d=document.createElement("style");d.id=h,d.textContent=c,document.head.appendChild(d)}Fi({templateSource:`<Stack class="flex min-h-screen w-full">
-  <Stack bind-style="?backdropStyle" on-click="closeMobileMenu"></Stack>
+var O=null,st=0,xt={signals:new Map,listeners:new Set,history:[],registerSignal(a,c,o){this.signals.set(a,{name:c,value:o}),this.broadcast("register",{id:a,name:c,value:o})},logMutation(a,c,o,e){this.signals.has(a)&&(this.signals.get(a).value=e);let x={id:a,name:c,oldValue:o,newValue:e,timestamp:Date.now()};this.history.push(x),this.broadcast("mutation",x)},onEvent(a){return this.listeners.add(a),()=>this.listeners.delete(a)},broadcast(a,c){this.listeners.forEach(o=>o({type:a,payload:c}))}};typeof window<"u"&&(window.__OMNI_DEVTOOLS__=xt);function p(a,c=""){let o=++st,e=new Set,x=c||`signal_${o}`;typeof window<"u"&&window.__OMNI_DEVTOOLS__&&window.__OMNI_DEVTOOLS__.registerSignal(o,x,a);function g(k){return k&&typeof k=="object"?new Proxy(k,{get(b,i,r){O&&e.add(O);let m=Reflect.get(b,i,r);return m&&typeof m=="object"?g(m):m},set(b,i,r,m){let t=Reflect.get(b,i,m);return t!==r&&(Reflect.set(b,i,r,m),typeof window<"u"&&window.__OMNI_DEVTOOLS__&&window.__OMNI_DEVTOOLS__.logMutation(o,x,t,r),e.forEach(n=>n())),!0}}):k}let l=g(a);return{__isSignal:!0,get value(){return O&&e.add(O),l},set value(k){if(l!==k){let b=l;l=g(k),typeof window<"u"&&window.__OMNI_DEVTOOLS__&&window.__OMNI_DEVTOOLS__.logMutation(o,x,b,k),e.forEach(i=>i())}}}}function u(a){let c=()=>{O=c;try{a()}finally{O=null}};c()}var at=!1,A=null,M=[];function T(a){M.push(a)}async function ct(a,c){let o=0;return new Promise(e=>{function x(g){if(g===!1)e({status:"cancel"});else if(typeof g=="string")e({status:"redirect",path:g});else if(g===!0||g===void 0)if(o++,o<M.length)try{M[o](a,c,x)}catch(l){console.error("[OmniJS Router] Guard error:",l),e({status:"cancel"})}else e({status:"ok"})}if(M.length===0)e({status:"ok"});else try{M[0](a,c,x)}catch(g){console.error("[OmniJS Router] Guard error:",g),e({status:"cancel"})}})}var it=()=>window.location.pathname||"/";function lt(){return at||(A=p(it()),window.addEventListener("popstate",async()=>{let a=A.value,c=it();if(c===a)return;let o=await ct(c,a);o.status==="ok"?(A.value=c,window.scrollTo({top:0,behavior:"instant"})):o.status==="redirect"?(window.history.pushState(null,"",o.path),A.value=o.path,window.scrollTo({top:0,behavior:"instant"})):(window.history.pushState(null,"",a),window.scrollTo({top:0,behavior:"instant"}))}),at=!0),A}async function f(a){A||lt();let c=A.value,o=a;if(o===c)return;let e=await ct(o,c);e.status==="ok"?(window.history.pushState(null,"",o),A.value=o,window.scrollTo({top:0,behavior:"instant"})):e.status==="redirect"&&f(e.path)}function d(){return A||lt(),A}function dt(a,c=[]){let o=a;for(let e of c){let x=e.name,g=new RegExp("<"+x+"\\b","g"),l=new RegExp("</"+x+"\\b","g");o=o.replace(g,`<omni-component-${x.toLowerCase()} omni-name="${x}"`),o=o.replace(l,`</omni-component-${x.toLowerCase()}>`)}return o=o.replace(/navigate::to=/g,"navigate-to="),o=o.replace(/bind::([a-zA-Z0-9_-]+)=/g,"bind-$1="),o=o.replace(/on::([a-zA-Z0-9_-]+)=/g,"on-$1="),o=o.replace(/animate::([a-zA-Z0-9_-]+)=/g,"animate-$1="),o=o.replace(/if::condition=/g,"if-condition="),o=o.replace(/src::logic=/g,"src-logic="),o=o.replace(/src::style=/g,"src-style="),o}async function h(a,c,o){let e=dt(a.templateSource,a.components||[]),g=new DOMParser().parseFromString(e,"text/html"),l=Array.from(g.body.childNodes);for(let k of l){let b=await E(k,c,{stackDepth:0,textDepth:1},a.components||[]);b&&o.appendChild(b)}}async function E(a,c,o,e){if(a.nodeType===Node.TEXT_NODE){let r=a.textContent;if(!r.trim())return null;if(r.includes("{")&&r.includes("}")){let m=document.createElement("span");return u(()=>{let t=r.replace(/\{[?]?([a-zA-Z0-9_.]+)\}/g,(n,z)=>{let C=z.split("."),w=c;for(let s of C)if(w&&typeof w=="object")if(s in w)w=w[s],w&&typeof w=="object"&&"value"in w&&Object.keys(w).length<=2&&(w=w.value);else return n;else return n;return w!==void 0?w:n});m.textContent=t}),m}return document.createTextNode(r)}if(a.nodeType!==Node.ELEMENT_NODE)return null;let x=a.tagName.toLowerCase();if(x==="portal"){let r=a.getAttribute("target")||"body",m=document.querySelector(r)||document.body,t=document.createElement("span");t.style.display="none",t.className="omni-portal-placeholder";let n=document.createElement("div");n.className="omni-portal-content",Array.from(a.attributes).forEach(s=>{s.name!=="target"&&s.name!=="as"&&n.setAttribute(s.name,s.value)});for(let s of Array.from(a.childNodes)){let S=await E(s,c,o,e);S&&n.appendChild(S)}m.appendChild(n);let z=()=>{let s=t.isConnected&&(t.offsetParent!==null||t.getBoundingClientRect().width>0);n.style.display=s?"":"none"},C=new MutationObserver(z);C.observe(document.body,{attributes:!0,subtree:!0,attributeFilter:["style","class"]}),setTimeout(z,0);let w=new MutationObserver(()=>{t.isConnected||(n.remove(),C.disconnect(),w.disconnect())});return w.observe(document.body,{childList:!0,subtree:!0}),t}let g=null;if(x.startsWith("omni-component-")){let r=a.getAttribute("omni-name");g=e.find(m=>m.name===r)}if(g){let r=document.createElement("div");r.className=`omni-component-${g.name.toLowerCase()}`;let m={};if(Array.from(a.attributes).forEach(t=>{if(t.name==="omni-name")return;let n=t.value;if(n.includes("{")&&n.includes("}")&&(n=n.replace(/\{[?]?([a-zA-Z0-9_.]+)\}/g,(z,C)=>{let w=C.split("."),s=c;for(let S of w)if(s&&typeof s=="object")if(S in s)s=s[S],s&&typeof s=="object"&&"value"in s&&Object.keys(s).length<=2&&(s=s.value);else return z;else return z;return s!==void 0?s:z})),t.name.startsWith("on-")){let z=t.name.replace("on-","");m[`on${z.charAt(0).toUpperCase()+z.slice(1)}`]=c[t.value]}else m[t.name]=n}),g.mount)await g.mount(r,m,c);else try{let n=await(await fetch(g.src,{cache:"no-cache"})).text();window.__omni_mount&&await window.__omni_mount(n,r,m,c)}catch(t){console.error(`[OmniJS] Failed to load component <${g.name}>`,t)}return r}let l,k={...o},b=a.getAttribute("as");if(x==="stack")k.stackDepth++,b?l=document.createElement(b):k.stackDepth===1?l=document.createElement("main"):k.stackDepth===2?l=document.createElement("section"):l=document.createElement("div");else if(x==="text")if(b)l=document.createElement(b);else if(o.collectionType==="tr"){let r=a.getAttribute("type");l=document.createElement(r==="th"?"th":"td")}else o.inCollection&&(o.collectionType==="ul"||o.collectionType==="ol"||!o.collectionType)?l=document.createElement("li"):k.textDepth<=6?(l=document.createElement(`h${k.textDepth}`),k.textDepth++):l=document.createElement("p");else if(x==="action")b==="link"||!b&&a.hasAttribute("href")?(l=document.createElement("a"),a.hasAttribute("href")&&(l.href=a.getAttribute("href"))):b==="submit"?(l=document.createElement("button"),l.type="submit"):a.hasAttribute("navigate-to")?(l=document.createElement("button"),l.setAttribute("role","link")):b?l=document.createElement(b):l=document.createElement("button");else if(x==="collection"){if(b)l=document.createElement(b);else{let r=a.getAttribute("type")||"ul";r==="table"?l=document.createElement("table"):r==="thead"?l=document.createElement("thead"):r==="tbody"?l=document.createElement("tbody"):r==="tr"?l=document.createElement("tr"):r==="ol"?l=document.createElement("ol"):l=document.createElement("ul"),k.collectionType=r}k.inCollection=!0}else if(x==="media")if(b)l=document.createElement(b);else{let r=a.getAttribute("src")||"",m=a.getAttribute("type");m==="video"||r.endsWith(".mp4")||r.endsWith(".webm")?l=document.createElement("video"):m==="audio"||r.endsWith(".mp3")||r.endsWith(".wav")?l=document.createElement("audio"):m==="iframe"||r.includes("youtube.com")||r.includes("vimeo.com")?l=document.createElement("iframe"):l=document.createElement("img")}else if(x==="form")if(b)l=document.createElement(b);else{let r=a.hasAttribute("bind-value")||a.hasAttribute("placeholder")||a.hasAttribute("type");if(!k.inForm&&!r)l=document.createElement("form"),k.inForm=!0;else{let m=a.getAttribute("type")||"text";m==="textarea"?l=document.createElement("textarea"):m==="select"?l=document.createElement("select"):m==="label"?l=document.createElement("label"):(l=document.createElement("input"),l.type=m)}}else l=document.createElement(a.tagName);let i=null;if(a.hasAttribute("route")&&(i=a.getAttribute("route")),Array.from(a.attributes).forEach(r=>{let m=r.name,t=r.value;if(m!=="route"&&m!=="as"){if(m==="navigate-to"){l.addEventListener("click",n=>{n.preventDefault(),f(t)});return}if(m.startsWith("bind-")){let n=m.replace("bind-",""),C=t.replace("?","").split("."),w=C[0];c[w]&&(u(()=>{let s=c[w];s&&typeof s=="object"&&s.__isSignal===!0&&(s=s.value);for(let S=1;S<C.length;S++)s&&typeof s=="object"?(s=s[C[S]],s&&typeof s=="object"&&s.__isSignal===!0&&(s=s.value)):s=void 0;n==="text"?l.textContent=s??"":n==="value"?l.value!==s&&(l.value=s):n==="show"?l.style.display=s?"":"none":n==="hide"?l.style.display=s?"none":"":l.setAttribute(n,s)}),n==="value"&&l.addEventListener("input",s=>{if(C.length===1)c[w].value=s.target.value;else{let S=c[w].value;for(let R=1;R<C.length-1;R++)S=S[C[R]];S[C[C.length-1]]=s.target.value}}));return}if(m.startsWith("on-")){let n=m.replace("on-","");c[t]&&l.addEventListener(n,c[t]);return}m!=="if-condition"&&l.setAttribute(m,t)}}),x==="collection"&&a.hasAttribute("data")&&a.hasAttribute("as")){let r=a.getAttribute("data").replace("?",""),m=a.getAttribute("as");if(c[r]){let t=Array.from(a.childNodes);u(()=>{l.innerHTML="",(c[r].value||[]).forEach(async z=>{let C={...c,[m]:z};for(let w of t){let s=w.cloneNode(!0),S=await E(s,C,k,e);S&&l.appendChild(S)}})})}}else for(let r of Array.from(a.childNodes)){let m=await E(r,c,k,e);m&&l.appendChild(m)}if(i!==null){let r=d();l.style.display="none",u(()=>{let m=r.value,t=i===m||i==="/"&&(m==="/"||m==="");l.style.display=t?"":"none"})}return l}function v(a,c){let[o,e]=p(void 0),[x,g]=p(!1),[l,k]=p(null);async function b(i){g(!0),k(null);try{let r=await a(i);e(r)}catch(r){k(r instanceof Error?r:new Error(String(r)))}finally{g(!1)}}return c?u(()=>{let i=typeof c=="function"?c():c&&c.value!==void 0?c.value:c;b(i)}):b(void 0),{get value(){return o.value},get loading(){return x.value},get error(){return l.value},$value:o,$loading:x,$error:l}}function y({initialValues:a={},validate:c=()=>({})}){let o={};Object.keys(a).forEach(b=>{o[b]=""});let e=p({...a}),x=p(o),g=p(!1);function l(){e.value={...a},x.value={...o},g.value=!1}function k(b){return async function(i){i&&typeof i.preventDefault=="function"&&i.preventDefault();let r=e.value,m=c(r)||{},t={...o};if(Object.keys(m).forEach(z=>{t[z]=m[z]||""}),x.value=t,!Object.keys(m).some(z=>m[z])){g.value=!0;try{await b(r)}catch(z){console.error("[OmniJS Form] Submission failed:",z)}finally{g.value=!1}}}}return{values:e,errors:x,submitting:g,handleSubmit:k,reset:l}}function _(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[850px] mx-auto pb-16 px-4">
+  <!-- Hero Section -->
+  <Stack class="mb-16 text-center sm:text-left">
+    <Text class="font-mono text-xs font-semibold text-[var(--color-accent-pink)] tracking-widest uppercase mb-4 animate-load=\\"from: { opacity: 0, y: 20, duration: 0.6 }\\"">Introducing OmniJS</Text>
+    <Text class="font-heading text-4xl sm:text-6xl font-extrabold text-zinc-900 dark:text-white tracking-tight leading-[1.08] mb-6 transition-colors duration-300 animate-load=\\"from: { opacity: 0, y: 30, duration: 0.8, ease: 'power3.out' }\\"">
+      Build premium interfaces with 
+      <Text class="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">6 core blocks.</Text>
+    </Text>
+    <Text class="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-[1.7] transition-colors duration-300 animate-load=\\"from: { opacity: 0, y: 30, duration: 0.8, delay: 0.2, ease: 'power3.out' }\\"">
+      OmniJS replaces traditional complex HTML with a unified abstraction layer. Leveraging a zero-build browser runtime for dev and an optimizing AOT compiler for production.
+    </Text>
+  </Stack>
+
+  <!-- CTA Buttons -->
+  <Stack class="flex flex-row flex-wrap gap-4 mb-16 items-center justify-center sm:justify-start animate-load=\\"from: { opacity: 0, y: 20, duration: 0.6, delay: 0.3 }\\"">
+    <Action class="px-6 py-3 bg-[var(--color-accent-pink)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-lg shadow-pink-500/20" navigate-to="/tutorial/1">Start Tutorial</Action>
+    <Action class="px-6 py-3 bg-white dark:bg-white/5 text-zinc-900 dark:text-white border border-black/10 dark:border-white/10 rounded-lg text-sm font-bold hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer" navigate-to="/blocks">Explore Deep Dives</Action>
+  </Stack>
+
+  <!-- Core Features Grid -->
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mb-6 border-b border-black/5 dark:border-white/10 pb-2 transition-colors duration-300">Core Features</Text>
   
-  <!-- Mobile Header -->
-  <Stack class="lg:hidden flex flex-row items-center justify-between px-6 py-4 bg-white/90 dark:bg-[#0e0e12]/90 backdrop-blur-md border-b border-black/10 dark:border-white/10 fixed top-0 left-0 right-0 z-40 w-full">
-    <Action class="font-heading text-xl font-extrabold bg-gradient-to-br from-[var(--color-accent-pink)] via-[var(--color-accent-purple)] to-[var(--color-accent-blue)] bg-clip-text text-transparent cursor-pointer" navigate-to="/">OmniJS</Action>
-    <Stack class="flex flex-row items-center gap-3">
-      <Action class="w-9 h-9 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 flex items-center justify-center cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-colors" on-click="toggleTheme">\u25D1</Action>
-      <Action class="w-9 h-9 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 flex items-center justify-center cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-colors" on-click="toggleMobileMenu">\u2630</Action>
-    </Stack>
-  </Stack>
-
-  <!-- \u2550\u2550\u2550 Sidebar \u2550\u2550\u2550 -->
-  <Stack bind-class="?sidebarClass" on-click="closeMobileMenu">
-    <Stack class="flex flex-row items-center justify-between mb-1 px-2">
-      <Action class="font-heading text-2xl font-extrabold bg-gradient-to-br from-[var(--color-accent-pink)] via-[var(--color-accent-purple)] to-[var(--color-accent-blue)] bg-clip-text text-transparent cursor-pointer tracking-tight" navigate-to="/">OmniJS</Action>
-      <Action class="w-9 h-9 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 flex items-center justify-center cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-colors" on-click="toggleTheme">\u25D1</Action>
-    </Stack>
-    <Text class="text-[0.7rem] text-zinc-500 tracking-widest uppercase font-semibold px-2 mb-4">Documentation</Text>
-
-    <!-- Search UI removed -->
-
-    <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold mt-3 mb-2 px-2">Overview</Text>
-    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/">Getting Started</Action>
-
-    <Stack class="flex items-center justify-between mt-7 mb-2 px-2 cursor-pointer group" on-click="toggleTutorials">
-      <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold group-hover:text-black dark:group-hover:text-white transition-colors">Interactive Tutorial</Text>
-      <Text class="text-zinc-400 text-xs" bind-style="?arrowStyle">\u25BC</Text>
+  <Stack class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5">
+      <Text class="text-2xl mb-3">\u26A1</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Zero-Build Dev Engine</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+        In local dev, simply load the lightweight client-side runtime parser directly in your browser. Start writing \`.omni\` components with instant feedback upon browser refresh\u2014no bundling required.
+      </Text>
     </Stack>
     
-    <Stack bind-style="?tutorialStyle" class="overflow-y-auto overflow-x-hidden max-h-[40vh]">
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/1">1. Layout & Stack</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/2">2. Typography</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/3">3. Interaction</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/media">4. Media</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/form">5. Forms</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/4">6. Collections</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/5">7. Reactivity</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/6">8. Routing</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/7">9. Components</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/css">10. Styling (CSS)</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/animation">11. Animations</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/todo">12. Build a Todo App</Action>
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5">
+      <Text class="text-2xl mb-3">\u{1F4E6}</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Static AOT Production Compiler</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+        The command-line build compiles your \`.omni\` template hierarchy, extracts styles, tree-shakes unused bindings, and bundles your entire codebase into a single deployment-ready minified JS file.
+      </Text>
     </Stack>
 
-    <Stack class="flex items-center justify-between mt-7 mb-2 px-2 cursor-pointer group" on-click="toggleDeepDives">
-      <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold group-hover:text-black dark:group-hover:text-white transition-colors">Deep Dives</Text>
-      <Text class="text-zinc-400 text-xs" bind-style="?deepDiveArrowStyle">\u25BC</Text>
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5">
+      <Text class="text-2xl mb-3">\u{1F9ED}</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Built-in History API Router</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+        Declarative client-side routing. Switch paths instantly using \`<Action navigate::to=\\"/route\\">\` and display matching \`<Stack route=\\"/route\\">\` views. Features native URL synchronization and history controls.
+      </Text>
     </Stack>
 
-    <Stack bind-style="?deepDiveStyle" class="overflow-y-auto overflow-x-hidden max-h-[40vh] transition-all duration-300">
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/blocks">Core Blocks Overview</Action>
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/stack">Stack Block</Action>
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/text">Text Block</Action>
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/action">Action Block</Action>
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/form">Form Block</Action>
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/collection">Collection Block</Action>
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/media">Media Block</Action>
-      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/use">Use Block</Action>
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5">
+      <Text class="text-2xl mb-3">\u{1F3A8}</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">CSS & Utility Styling</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+        Support for scoped \`<style>\` blocks, standard inline styles, and utility-first styling with frameworks like Tailwind CSS out-of-the-box.
+      </Text>
     </Stack>
 
-    <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold mt-7 mb-2 px-2">API Reference</Text>
-    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/reactivity">Reactivity</Action>
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5">
+      <Text class="text-2xl mb-3">\u267B\uFE0F</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Signals-Based Reactivity</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+        Zero overhead Proxy reactivity system. Mutating a \`?state\` variable directly updates dependent DOM elements via granular subscriptions. No Virtual DOM diffing, just precise DOM updates.
+      </Text>
+    </Stack>
 
-    <Stack class="mt-auto px-2">
-      <Text class="text-[0.7rem] text-zinc-500 font-mono">v1.0.0</Text>
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-7 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg hover:-translate-y-0.5">
+      <Text class="text-2xl mb-3">\u{1F9E9}</Text>
+      <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">Isolated Component Imports</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+        Import other \`.omni\` files cleanly using \`\` tags. Every component maintains fully isolated script state and scoped CSS styles to prevent name clashes.
+      </Text>
     </Stack>
   </Stack>
 
-  <!-- \u2550\u2550\u2550 Main Content with Routes \u2550\u2550\u2550 -->
-  <Stack class="responsive-main flex-1 ml-[260px] py-14 px-16 min-h-screen max-w-[1100px] transition-colors duration-300">
-    <Stack route="/">
-      <Home></Home>
-    </Stack>
-    <Stack route="/blocks">
-      <Blocks></Blocks>
-    </Stack>
-    
-    <!-- Deep Dive Pages -->
-    <Stack route="/block/stack" class="w-full h-full">
-      
-      <BlockStack></BlockStack>
-    </Stack>
-    <Stack route="/block/text" class="w-full h-full">
-      
-      <BlockText></BlockText>
-    </Stack>
-    <Stack route="/block/action" class="w-full h-full">
-      
-      <BlockAction></BlockAction>
-    </Stack>
-    <Stack route="/block/form" class="w-full h-full">
-      
-      <BlockForm></BlockForm>
-    </Stack>
-    <Stack route="/block/collection" class="w-full h-full">
-      
-      <BlockCollection></BlockCollection>
-    </Stack>
-    <Stack route="/block/media" class="w-full h-full">
-      
-      <BlockMedia></BlockMedia>
-    </Stack>
-    <Stack route="/block/use" class="w-full h-full">
-      
-      <BlockUse></BlockUse>
-    </Stack>
+  <!-- Setup and Workflow Details -->
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mb-6 border-b border-black/5 dark:border-white/10 pb-2 transition-colors duration-300">Project Setup Guide</Text>
 
-    <Stack route="/api" class="w-full h-full">
+  <!-- Step 1: CLI Scaffolding -->
+  <Stack class="mb-10">
+    <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">1. Scaffold a New Project</Text>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm mb-4 leading-relaxed transition-colors duration-300">
+      You can quickly scaffold a fresh workspace pre-configured with Tailwind, hot-reloading dev servers, AOT compiler targets, and a starter layout by running:
+    </Text>
+    <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 font-mono text-[0.82rem] leading-relaxed text-zinc-700 dark:text-zinc-300 transition-all duration-300">
+      <Text class="text-[var(--color-accent-pink)] font-semibold">npx @omni/cli create my-omni-app</Text>
+      <Text class="text-[var(--color-accent-blue)] font-semibold mt-2">cd my-omni-app && npm install</Text>
     </Stack>
-    <Stack route="/reactivity">
-      <Reactivity></Reactivity>
-    </Stack>
-    <Stack route="/tutorial/1"><Tutorial1></Tutorial1></Stack>
-    <Stack route="/tutorial/2"><Tutorial2></Tutorial2></Stack>
-    <Stack route="/tutorial/3"><Tutorial3></Tutorial3></Stack>
-    <Stack route="/tutorial/media"><TutorialMedia></TutorialMedia></Stack>
-    <Stack route="/tutorial/form"><TutorialForm></TutorialForm></Stack>
-    <Stack route="/tutorial/4"><Tutorial4></Tutorial4></Stack>
-    <Stack route="/tutorial/5"><Tutorial5></Tutorial5></Stack>
-    <Stack route="/tutorial/6"><Tutorial6></Tutorial6></Stack>
-    <Stack route="/tutorial/7"><Tutorial7></Tutorial7></Stack>
-    <Stack route="/tutorial/css"><TutorialCSS></TutorialCSS></Stack>
-    <Stack route="/tutorial/animation"><TutorialAnimation></TutorialAnimation></Stack>
-    <Stack route="/tutorial/todo"><TutorialTodo></TutorialTodo></Stack>
   </Stack>
 
-</Stack>`,components:[{src:"./src/Home.omni",name:"Home"},{src:"./src/Blocks.omni",name:"Blocks"},{src:"./src/Reactivity.omni",name:"Reactivity"},{src:"./src/Tutorial1.omni",name:"Tutorial1"},{src:"./src/Tutorial2.omni",name:"Tutorial2"},{src:"./src/Tutorial3.omni",name:"Tutorial3"},{src:"./src/TutorialMedia.omni",name:"TutorialMedia"},{src:"./src/TutorialForm.omni",name:"TutorialForm"},{src:"./src/Tutorial4.omni",name:"Tutorial4"},{src:"./src/Tutorial5.omni",name:"Tutorial5"},{src:"./src/Tutorial6.omni",name:"Tutorial6"},{src:"./src/Tutorial7.omni",name:"Tutorial7"},{src:"./src/TutorialCSS.omni",name:"TutorialCSS"},{src:"./src/TutorialAnimation.omni",name:"TutorialAnimation"},{src:"./src/TutorialTodo.omni",name:"TutorialTodo"},{src:"./src/BlockStack.omni",name:"BlockStack"},{src:"./src/BlockText.omni",name:"BlockText"},{src:"./src/BlockAction.omni",name:"BlockAction"},{src:"./src/BlockForm.omni",name:"BlockForm"},{src:"./src/BlockCollection.omni",name:"BlockCollection"},{src:"./src/BlockMedia.omni",name:"BlockMedia"},{src:"./src/BlockUse.omni",name:"BlockUse"}]},t,l)}export{Cs as default};
-/*! Bundled license information:
+  <!-- Step 2: Directory Layout -->
+  <Stack class="mb-10">
+    <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">2. Directory Structure</Text>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm mb-4 leading-relaxed transition-colors duration-300">
+      The standard project layout is organized as follows:
+    </Text>
+    <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 font-mono text-[0.8rem] leading-loose text-zinc-700 dark:text-zinc-300 transition-all duration-300">
+      <Text>my-omni-app/</Text>
+      <Text> \u251C\u2500\u2500 index.html            <Text class="text-zinc-500 dark:text-zinc-500"># Main entry point served by local server</Text></Text>
+      <Text> \u251C\u2500\u2500 omni-runtime.js       <Text class="text-zinc-500 dark:text-zinc-500"># Core framework interpreter (dev mode only)</Text></Text>
+      <Text> \u251C\u2500\u2500 output.css            <Text class="text-zinc-500 dark:text-zinc-500"># Compiled and built Tailwind CSS stylesheet</Text></Text>
+      <Text> \u251C\u2500\u2500 package.json          <Text class="text-zinc-500 dark:text-zinc-500"># Package manager configuration & build targets</Text></Text>
+      <Text> \u2514\u2500\u2500 src/</Text>
+      <Text>      \u251C\u2500\u2500 App.omni          <Text class="text-zinc-500 dark:text-zinc-500"># Root app component and router layout</Text></Text>
+      <Text>      \u251C\u2500\u2500 input.css         <Text class="text-zinc-500 dark:text-zinc-500"># Tailwind CSS source directives</Text></Text>
+      <Text>      \u251C\u2500\u2500 components/       <Text class="text-zinc-500 dark:text-zinc-500"># Reusable atomic UI elements</Text></Text>
+      <Text>      \u2514\u2500\u2500 pages/            <Text class="text-zinc-500 dark:text-zinc-500"># Large route page view components</Text></Text>
+    </Stack>
+  </Stack>
 
-gsap/gsap-core.js:
-  (*!
-   * GSAP 3.15.0
-   * https://gsap.com
-   *
-   * @license Copyright 2008-2026, GreenSock. All rights reserved.
-   * Subject to the terms at https://gsap.com/standard-license
-   * @author: Jack Doyle, jack@greensock.com
-  *)
+  <!-- Step 3: Local Development -->
+  <Stack class="mb-10">
+    <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">3. Run Local Development</Text>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm mb-4 leading-relaxed transition-colors duration-300">
+      Start the dev server by executing the command below. This starts a concurrent task that watches/compiles your CSS and boots a local file server:
+    </Text>
+    <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 font-mono text-[0.82rem] leading-relaxed text-zinc-700 dark:text-zinc-300 transition-all duration-300 mb-4">
+      <Text class="text-[var(--color-accent-orange)] font-semibold">npm run dev</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+      Open the URL printed in your console (e.g. \`http://localhost:3000\`). In this mode, the browser retrieves \`/omni-runtime.js\` which dynamically fetches and compiles \`/src/App.omni\` on the fly. You can write code, save, and refresh to view changes immediately.
+    </Text>
+  </Stack>
 
-gsap/CSSPlugin.js:
-  (*!
-   * CSSPlugin 3.15.0
-   * https://gsap.com
-   *
-   * Copyright 2008-2026, GreenSock. All rights reserved.
-   * Subject to the terms at https://gsap.com/standard-license
-   * @author: Jack Doyle, jack@greensock.com
-  *)
-*/
+  <!-- Step 4: Production Builds -->
+  <Stack class="mb-10">
+    <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">4. Compile and Build for Production</Text>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm mb-4 leading-relaxed transition-colors duration-300">
+      When you are ready to deploy your app, compile your codebase using AOT compiler optimization:
+    </Text>
+    <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 font-mono text-[0.82rem] leading-relaxed text-zinc-700 dark:text-zinc-300 transition-all duration-300 mb-4">
+      <Text class="text-[var(--color-accent-blue)] font-semibold">npm run build</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+      This compiler executes a build pipeline that:
+    </Text>
+    <Collection class="list-disc pl-5 mt-2 space-y-2 text-zinc-600 dark:text-zinc-400 text-sm">
+      <Text>Minifies and tree-shakes your source files into a single, optimized bundle inside \`dist/App.js\`.</Text>
+      <Text>Copies and minifies your CSS stylesheet into \`dist/output.css\`.</Text>
+      <Text>Generates \`dist/index.html\` with root-relative references, stripped development script tags, and a modern module mount block.</Text>
+    </Collection>
+  </Stack>
+
+  <!-- Step 5: Start & Deploy -->
+  <Stack class="mb-10">
+    <Text class="font-heading text-lg font-bold text-zinc-900 dark:text-white mb-2 transition-colors duration-300">5. Start and Deploy</Text>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm mb-4 leading-relaxed transition-colors duration-300">
+      You can preview the compiled production app locally before shipping by running:
+    </Text>
+    <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 font-mono text-[0.82rem] leading-relaxed text-zinc-700 dark:text-zinc-300 transition-all duration-300 mb-4">
+      <Text class="text-zinc-500"># Start local static server in /dist</Text>
+      <Text class="text-[var(--color-accent-pink)] font-semibold">npm run start</Text>
+    </Stack>
+    <Text class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed transition-colors duration-300">
+      To deploy your application, simply copy the contents of the generated \`dist/\` directory directly to any static web hosting provider (such as Vercel, Netlify, AWS S3, Cloudflare Pages, or GitHub Pages).
+    </Text>
+  </Stack>
+</Stack>`,components:[]},e,a)}function I(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Stack class="mb-12">\r
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2 transition-colors duration-300">Core Blocks</Text>\r
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">OmniJS replaces every HTML element with 6 universal building blocks. The compiler determines the correct semantic HTML output automatically.</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0 }">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#7b5cff]/10 text-[var(--color-accent-purple)]">&lt;Stack&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">The foundation of all layout. A Stack automatically compiles to semantic elements based on its depth in the component tree \u2014 main at the root, section at depth 2, and div for deeper nesting.</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">main \xB7 section \xB7 div \xB7 nav \xB7 header \xB7 footer</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.1 }">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#00c2ff]/10 text-[var(--color-accent-blue)]">&lt;Text&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Renders text content with automatic heading hierarchy. The first Text becomes h1, the next h2, and so on down to h6, after which it falls back to paragraph tags.</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">h1 \xB7 h2 \xB7 h3 \xB7 h4 \xB7 h5 \xB7 h6 \xB7 p \xB7 span \xB7 li</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.2 }">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#ff2d7b]/10 text-[var(--color-accent-pink)]">&lt;Action&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Interactive elements. The output tag is determined by the attributes you provide \u2014 an anchor for href, a button for click handlers or navigation, and input for data binding.</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">button \xB7 a \xB7 input \xB7 textarea</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.3 }">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#ff9f43]/10 text-[var(--color-accent-orange)]">&lt;Collection&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Iterates over data arrays to produce semantically correct, highly optimized list structures. Supports unordered lists, ordered lists, and complex table matrices. Use type="ol" for ordered lists.</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">ul \xB7 ol \xB7 table \xB7 tr \xB7 td</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.4 }">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#00d68f]/10 text-[var(--color-accent-green)]">&lt;Media&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Handles all multimedia content intelligently. It automatically outputs the correct native tag based on the provided file extension or explicit type attribute.</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">img \xB7 video \xB7 audio \xB7 iframe</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.5 }">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#ff2d7b]/10 text-[var(--color-accent-pink)]">&lt;Form&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">A context-aware form builder. The top level acts as a form wrapper, while nested Form tags compile into appropriate form controls depending on the type attribute (inputs, textareas, selects, or labels).</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">form \xB7 input \xB7 textarea \xB7 select \xB7 label</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg" animate-load="from: { opacity: 0, y: 40, rotationX: -15, duration: 0.8, ease: 'back.out(1.2)', delay: 0.6 }">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#7b5cff]/10 text-[var(--color-accent-purple)]">&lt;Use&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">The component inclusion and instantiation block. Use it to import external OmniJS files and register them as custom tags that can accept props.</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Compiles To</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">Custom Components</Text>\r
+  </Stack>\r
+\r
+  <Stack class="block-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-8 mb-5 transition-all duration-300 hover:border-black/15 dark:hover:border-white/20 hover:shadow-lg">\r
+    <Stack class="flex items-center gap-3 mb-4">\r
+      <Text class="font-mono text-sm font-semibold px-3 py-1 rounded-md bg-[#ff2d7b]/10 text-[var(--color-accent-pink)]">&lt;Portal&gt;</Text>\r
+    </Stack>\r
+    <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm mb-4 transition-colors duration-300">Renders its children into a target DOM node outside the parent component's DOM tree (e.g. #modal-root or body) while preserving reactive state bindings and syncing visibility with the parent component hierarchy.</Text>\r
+    <Text class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1.5 transition-colors duration-300">Key Attribute</Text>\r
+    <Text class="font-mono text-[0.82rem] text-zinc-500 dark:text-zinc-500 transition-colors duration-300">target (CSS selector string)</Text>\r
+  </Stack>\r
+</Stack>`,components:[]},e,a)}function D(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Reactivity & Signals</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">OmniJS uses a zero-overhead, fine-grained reactivity system based on Signals. State mutations trigger direct, surgical DOM updates without a virtual DOM.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Declaring Reactive State</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    State is declared in component \`<script>\` blocks using the \`state ?varName = initialValue;\` syntax. The compiler transforms this into a Signal object behind the scenes and registers it with DevTools.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Declaring reactive variables</Text>
+    <Text class="text-[var(--color-accent-pink)]">state ?counter = 0;</Text>
+    <Text class="text-[var(--color-accent-blue)]">state ?username = "OmniJS";</Text>
+    <Text class="text-[var(--color-accent-orange)]">state ?userProfile = { role: "admin", active: true };</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Mutating State</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    You modify state by assigning values to variables naturally. For objects and arrays, standard assignments and property mutations are automatically tracked via a Proxy wrapper.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-800 dark:text-zinc-200">function increment() {</Text>
+    <Text class="text-[var(--color-accent-pink)]">  ?counter = ?counter + 1; // Direct assignment</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>
+    <Text class="text-zinc-500 mt-2">// Object property mutations are also reactive</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">function toggleActive() {</Text>
+    <Text class="text-[var(--color-accent-orange)]">  ?userProfile.active = !?userProfile.active;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Side Effects (effect)</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    The \`effect(fn)\` utility executes a function and automatically tracks any reactive signal accessed during its execution. Whenever those signals mutate, the function runs again automatically.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-blue)]">effect(() => {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  // Automatically re-executes whenever ?counter changes</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  document.title = \`Count: \${?counter}\`;</Text>
+    <Text class="text-[var(--color-accent-blue)]">});</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Logging State (log)</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    OmniJS provides a context-aware global \`log()\` function inside \`<script>\` blocks. It prefixes console output with \`[OmniJS]\` and automatically unpacks the current value of any reactive variable passed into it.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-800 dark:text-zinc-200">function checkState() {</Text>
+    <Text class="text-[var(--color-accent-pink)]">  log("Counter value is:", ?counter); </Text>
+    <Text class="text-zinc-500">  // Output: [OmniJS] Counter value is: 0</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/portal">&larr; Portal Block</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/api/resource">Next: createResource &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function P(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Asynchronous Resources (createResource)</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">Manage remote data fetching declaratively. The \`createResource\` primitive handles state synchronization, loading flags, errors, and reactive dependency refetching automatically.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Usage & Signature</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    \`createResource\` takes an asynchronous fetcher function and an optional dependency tracking source. It returns a read-only object wrapping reactive signals.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Signature: const resource = createResource(fetcher, source?);</Text>
+    <Text class="text-[var(--color-accent-blue)]">const userResource = createResource(async (id) => {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  const res = await fetch(\`/api/user/\${id}\`);</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  return res.json();</Text>
+    <Text class="text-[var(--color-accent-blue)]">}, () => ?userId);</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-3">Resource Properties</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    The returned object exposes three read-only properties which can be bound directly to the template:
+  </Text>
+  
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12] my-4">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Property</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">value</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Any</Text>
+          <Text type="td" class="px-4 py-3">The resolved data returned by the fetcher (or \`undefined\` initially).</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">loading</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Boolean</Text>
+          <Text type="td" class="px-4 py-3">Reactive boolean indicating if the fetch operation is currently in progress.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">error</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Error | null</Text>
+          <Text type="td" class="px-4 py-3">Contains any Error object thrown during fetching, or \`null\` if successful.</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-3">Binding to Templates</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    You can bind the resource states in templates using the standard \`bind-\` properties or inline template syntax. Nested signal unwrapping handles properties automatically.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-4 overflow-x-auto">
+    <Text class="text-[var(--color-accent-pink)]">&lt;Stack bind-show="userResource.loading"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Loading user details...&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Stack&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;Stack bind-show="userResource.value"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Welcome back, {userResource.value.name}!&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;/Stack&gt;</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/api/reactivity">&larr; Reactivity & Signals</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/api/context">Next: Context API &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function j(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Scoped Context API (provide / inject)</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">Share state and functions across deeply nested child component trees without prop-drilling. The provider/injector system resolves context dynamically by climbing up the component ancestry.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Providing Context</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    In your provider component's script block, use \`provide(key, value)\`. You can pass objects containing reactive signals to share live state updates.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Provider Component (e.g., App.omni)</Text>
+    <Text class="text-[var(--color-accent-pink)]">state ?theme = "dark";</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">function toggleTheme() {</Text>
+    <Text class="text-[var(--color-accent-pink)]">  ?theme = ?theme === "dark" ? "light" : "dark";</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>
+    <Text class="text-[var(--color-accent-blue)]">provide("themeContext", {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  theme: context.theme, // Pass the raw signal reference</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  toggleTheme</Text>
+    <Text class="text-[var(--color-accent-blue)]">});</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Injecting Context</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    In any deeply nested child component, use \`inject(key)\` in the script block. To track context signal mutations reactively in children, bind or monitor them inside an effect.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Consumer Component (e.g., ThemeButton.omni)</Text>
+    <Text class="text-[var(--color-accent-blue)]">const themeCtx = inject("themeContext");</Text>
+    <Text class="text-[var(--color-accent-pink)]">state ?currentTheme = "";</Text>
+    <Text class="text-zinc-500 mt-2">// Sync local state with context reactively</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">effect(() => {</Text>
+    <Text class="text-[var(--color-accent-pink)]">  ?currentTheme = themeCtx.theme.value;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">});</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/api/resource">&larr; Asynchronous Resources</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/api/form">Next: Form Management &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function F(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Form Management (useForm)</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">Manage input state validation, submission statuses, errors, and reset lifecycles reactively in your form controls with the \`useForm\` hook.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Form Configuration</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    Call \`useForm\` inside your script block, passing the \`initialValues\` shape and a custom \`validate\` callback. The hook guarantees that all error fields are initialized to empty strings \`""\` to prevent \`"undefined"\` coersion in DOM bindings.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-blue)]">const myForm = useForm({</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  initialValues: { email: "", password: "" },</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  validate: (values) => {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    const errs = {};</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    if (!values.email.includes("@")) errs.email = "Invalid email";</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    if (values.password.length &lt; 6) errs.password = "Too short";</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    return errs;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  }</Text>
+    <Text class="text-[var(--color-accent-blue)]">});</Text>
+    <Text class="text-zinc-500 mt-2">// Wrapper for submission logic</Text>
+    <Text class="text-[var(--color-accent-pink)]">const onSubmit = myForm.handleSubmit(async (data) => {</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">  log("Submitting validated data:", data);</Text>
+    <Text class="text-[var(--color-accent-pink)]">});</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-3">API Members</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    The returned object exposes reactive signals and utility methods:
+  </Text>
+  
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12] my-4">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Member</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">values</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Signal&lt;Object&gt;</Text>
+          <Text type="td" class="px-4 py-3">Reactive state wrapping input fields values.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">errors</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Signal&lt;Object&gt;</Text>
+          <Text type="td" class="px-4 py-3">Reactive state holding validation error strings.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">submitting</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Signal&lt;Boolean&gt;</Text>
+          <Text type="td" class="px-4 py-3">Reactive boolean indicating if async submit handler is running.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">handleSubmit</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>
+          <Text type="td" class="px-4 py-3">Validates inputs first, updates errors signal, and executes submit callback.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">reset</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>
+          <Text type="td" class="px-4 py-3">Resets values, errors, and submitting state signals to their initial shapes.</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-3">Binding to Form Elements</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    Two-way bind form inputs directly to form values signals. Use conditional bindings like \`bind-show\` to reveal errors.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-4 overflow-x-auto">
+    <Text class="text-[var(--color-accent-pink)]">&lt;Form on-submit="onSubmit"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Form type="email" placeholder="Email" bind-value="?myForm.values.email" /&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Text class="text-red-500" bind-text="?myForm.errors.email" bind-show="myForm.errors.email"&gt;&lt;/Text&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Action type="submit" bind-hide="myForm.submitting"&gt;Login&lt;/Action&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Form&gt;</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/api/context">&larr; Scoped Context API</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/api/router">Next: Router & Guards &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function B(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Router Navigation Guards (beforeEach)</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">Build secure paths and transitions. Programmatically intercept, pause, cancel, or redirect route changes before they are committed using the beforeEach guard middleware.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Registering Navigation Guards</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    Register a global navigation guard in your root script block using \`beforeEach((to, from, next) => { ... })\`. You must invoke the \`next()\` callback exactly once to resolve the transition.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Register guard</Text>
+    <Text class="text-[var(--color-accent-blue)]">beforeEach((to, from, next) => {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  if (to === "/admin" && !?isLoggedIn) {</Text>
+    <Text class="text-[var(--color-accent-pink)]">    next("/login"); // Redirect to login</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  } else if (to === "/blocked") {</Text>
+    <Text class="text-[var(--color-accent-pink)]">    next(false); // Cancel transition, revert URL</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  } else {</Text>
+    <Text class="text-[var(--color-accent-pink)]">    next(); // Proceed to destination</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  }</Text>
+    <Text class="text-[var(--color-accent-blue)]">});</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-3">Guard Callback Parameter (next)</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    The third parameter \`next\` accepts the following arguments:
+  </Text>
+  
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12] my-4">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Value</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Action</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">next()</Text>
+          <Text type="td" class="px-4 py-3 text-zinc-600 dark:text-zinc-400">Proceed to the next guard or confirm the navigation if no guards remain.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">next(false)</Text>
+          <Text type="td" class="px-4 py-3 text-zinc-600 dark:text-zinc-400">Abort current transition. The URL is automatically reset to the \`from\` path.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">next("/path")</Text>
+          <Text type="td" class="px-4 py-3 text-zinc-600 dark:text-zinc-400">Redirects to the specified path. Aborts current transition and schedules a new transition.</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-3">Programmatic Navigation (navigate)</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    Trigger page transitions in your JavaScript functions by calling \`navigate("/path")\`.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-4 overflow-x-auto">
+    <Text class="text-zinc-800 dark:text-zinc-200">function loginUser() {</Text>
+    <Text class="text-[var(--color-accent-blue)]">  navigate("/dashboard"); // Redirect user</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/api/form">&larr; Form Management</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/api/devtools">Next: DevTools &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function N(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">DevTools Reactivity Explorer Hook</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">Inspect registered signals and trace state mutations in real-time. In OmniJS, the compiler automatically passes variable names as debug labels to the global DevTools hook.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Global Hook Hook API</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    The framework exposes a global \`window.__OMNI_DEVTOOLS__\` hook in the browser. You can inspect active signals, view history of mutations, and subscribe to events.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Subscribe to reactivity events (creation, updates)</Text>
+    <Text class="text-[var(--color-accent-blue)]">if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">  window.__OMNI_DEVTOOLS__.onEvent(({ type, payload }) => {</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">    if (type === "mutation") {</Text>
+    <Text class="text-[var(--color-accent-pink)]">      console.log(\`[DevTools] Signal "\${payload.name}" changed:\`, payload.oldValue, "->", payload.newValue);</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">    }</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">  });</Text>
+    <Text class="text-[var(--color-accent-blue)]">}</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-3">API Schema</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    \`window.__OMNI_DEVTOOLS__\` exposes the following members:
+  </Text>
+  
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12] my-4">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Member</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">signals</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Map&lt;Number, Object&gt;</Text>
+          <Text type="td" class="px-4 py-3">Map of active signals indexed by unique IDs, mapping to \`{ name, value }\`.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">history</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Array&lt;Object&gt;</Text>
+          <Text type="td" class="px-4 py-3">Audit history log of all mutations: \`{ id, name, oldValue, newValue, timestamp }\`.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">onEvent</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>
+          <Text type="td" class="px-4 py-3">Registers listener for reactivity events. Returns an unsubscribe function.</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/api/router">&larr; Router & Guards</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/">Finish &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function H(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Stack class="mb-12">\r
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2 transition-colors duration-300">Interactive Tutorial</Text>\r
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">A comprehensive, hands-on walkthrough of every OmniJS concept. Let's start with the most fundamental building block of layout.</Text>\r
+  </Stack>\r
+\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-purple)] mb-2">Core Block 1 of 4</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">&lt;Stack&gt; \u2014 Layout Container</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">Stack is the universal container. It replaces every structural HTML element \u2014 div, section, main, nav, header, and footer. The compiler determines the correct semantic tag based on the Stack's depth in the component tree, ensuring accessibility without mental overhead.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">How Depth Mapping Works</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">The first Stack in your template renders as a main element. Nested inside it, the next level renders as section. Any deeper nesting produces div elements.</Text>\r
+\r
+  <Stack class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">OmniJS Input</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;Stack&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">  &lt;Stack&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-pink)]">    &lt;Stack&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">      &lt;Text&gt;Deep&lt;/Text&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-pink)]">    &lt;/Stack&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">  &lt;/Stack&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;/Stack&gt;</Text>\r
+    </Stack>\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">HTML Output</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;main&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">  &lt;section&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-pink)]">    &lt;div&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">      &lt;h1&gt;Deep&lt;/h1&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-pink)]">    &lt;/div&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">  &lt;/section&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;/main&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Attributes</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">All standard HTML attributes pass through to the rendered element.</Text>\r
+\r
+  <Stack class="w-full mb-6">\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/4 font-mono text-xs text-[var(--color-accent-blue)] font-medium">class</Text>\r
+      <Text class="w-3/4 text-sm text-zinc-600 dark:text-zinc-400">CSS classes \u2014 fully compatible with Tailwind CSS</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/4 font-mono text-xs text-[var(--color-accent-blue)] font-medium">style</Text>\r
+      <Text class="w-3/4 text-sm text-zinc-600 dark:text-zinc-400">Inline CSS styles</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/4 font-mono text-xs text-[var(--color-accent-blue)] font-medium">route</Text>\r
+      <Text class="w-3/4 text-sm text-zinc-600 dark:text-zinc-400">Turns this Stack into a route view container</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Stack class="border-l-4 border-[var(--color-accent-purple)] bg-[#7b5cff]/10 p-4 rounded-r-xl my-6">\r
+    <Text class="text-zinc-700 dark:text-zinc-300 text-[0.88rem] leading-relaxed">Pro tip: Since all layout is done via CSS (flexbox, grid), the specific HTML tag rarely matters for visual layout. What matters is the semantic meaning \u2014 and OmniJS handles that automatically based on tree depth.</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Stack></Stack>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/2">Next: Typography &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function L(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Core Block 2 of 4</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">&lt;Text&gt; \u2014 Typography</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">Text handles all typographic output. It automatically assigns the correct heading level based on how many Text blocks have appeared before it in the same scope, then falls back to paragraphs.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Heading Hierarchy</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">The heading depth counter starts at 1 and increments for each Text block the renderer encounters sequentially. Once it passes h6, all subsequent Text blocks become paragraph elements.</Text>\r
+\r
+  <Stack class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">OmniJS Input</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">&lt;Text&gt;Title&lt;/Text&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">&lt;Text&gt;Subtitle&lt;/Text&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">&lt;Text&gt;Section&lt;/Text&gt;</Text>\r
+    </Stack>\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">HTML Output</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;h1&gt;Title&lt;/h1&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;h2&gt;Subtitle&lt;/h2&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;h3&gt;Section&lt;/h3&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Reactive Text</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Bind state directly to a Text element using bind-text. The content updates in real-time when the signal changes.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-zinc-500">&lt;!-- Static text --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Text&gt;Hello World&lt;/Text&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-zinc-500">&lt;!-- Reactive text (updates when ?count changes) --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Text bind-text="?count"&gt;&lt;/Text&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-zinc-500">&lt;!-- Inline interpolation --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-green)]">&lt;Text&gt;You have {?count} items&lt;/Text&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/1">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/3">Next: Interaction &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function J(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">Core Block 3 of 4</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">&lt;Action&gt; \u2014 Interaction</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">Action is the interactive element. The compiler inspects the attributes you provide and selects the most appropriate HTML element \u2014 a button for clicks, an anchor for links, or an input for data binding.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Attribute-Based Element Selection</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">OmniJS infers the correct accessible HTML tag from your attributes. You can also explicitly set it using the \`as\` attribute.</Text>\r
+\r
+  <Stack class="w-full mb-6">\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">navigate-to="/path"</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;button role="link"&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">Client-side SPA navigation</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">as="link" href="..."</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;a&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">External or traditional link</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">as="button"</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;button&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">Explicitly forces a button tag</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">as="submit"</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;button type="submit"&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">Form submission button</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Examples</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-zinc-500">&lt;!-- SPA navigation --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action navigate-to="/about"&gt;About Us&lt;/Action&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-zinc-500">&lt;!-- External link --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-green)]">&lt;Action href="https://github.com"&gt;GitHub&lt;/Action&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-zinc-500">&lt;!-- Button with event --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Action class="px-4 py-2 bg-blue-500 rounded" on-click="submit"&gt;Submit&lt;/Action&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="border-l-4 border-[var(--color-accent-purple)] bg-[#7b5cff]/10 p-4 rounded-r-xl my-6">\r
+    <Text class="text-zinc-700 dark:text-zinc-300 text-[0.88rem] leading-relaxed">Accessibility Note: Because Action renders as a real button or anchor element natively, keyboard navigation and screen reader support work out of the box. You never need to add tabindex or role manually for basic interactions.</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/2">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/media">Next: Media &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function U(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-green)] mb-2">Core Block 4 of 6</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">&lt;Media&gt; \u2014 Images, Video & Audio</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">The Media block handles all multimedia content intelligently. By inspecting the file extension or the URL, OmniJS automatically outputs the correct native media tag.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Automatic Type Inference</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">You rarely need to specify what kind of media you're rendering. The compiler infers it from the \`src\` attribute.</Text>\r
+\r
+  <Stack class="w-full mb-6">\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">src="image.png"</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;img&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">Default fallback</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">src="video.mp4"</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;video&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">.mp4 and .webm extensions</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">src="audio.mp3"</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;audio&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">.mp3 and .wav extensions</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/3 font-mono text-xs text-[var(--color-accent-blue)] font-medium">src="youtube.com/..."</Text>\r
+      <Text class="w-1/4 font-mono text-xs text-zinc-500 font-medium">&lt;iframe&gt;</Text>\r
+      <Text class="w-2/3 text-sm text-zinc-600 dark:text-zinc-400">youtube.com and vimeo.com domains</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Explicit Override</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">If the URL doesn't have an extension (e.g., an API endpoint), you can explicitly set the \`type\` attribute.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-zinc-500">&lt;!-- Explicitly forcing a video tag --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-green)]">&lt;Media type="video" src="https://api.example.com/stream/123" controls /&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/3">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/form">Next: Forms &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function W(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">Core Block 5 of 6</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">&lt;Form&gt; \u2014 Forms & Inputs</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">The Form block is a context-aware form builder. The top-level Form acts as the form wrapper, while nested Form blocks automatically compile into appropriate form controls based on their type attribute.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Context-Aware Nesting</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">When the compiler encounters a Form block, it checks if it's already inside a Form. If it isn't, it outputs a \`&lt;form&gt;\` tag. If it is, it outputs an input, textarea, select, or label.</Text>\r
+\r
+  <Stack class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">OmniJS Input</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-pink)]">&lt;Form&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">  &lt;Form type="label"&gt;Email&lt;/Form&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">  &lt;Form type="email" bind-value="?email" /&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-blue)]">  &lt;Form type="textarea" bind-value="?msg" /&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-pink)]">&lt;/Form&gt;</Text>\r
+    </Stack>\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">HTML Output</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;form&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">  &lt;label&gt;Email&lt;/label&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">  &lt;input type="email"&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">  &lt;textarea&gt;&lt;/textarea&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;/form&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Form Submission</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">To submit a form, include an \`&lt;Action as="submit"&gt;\` block inside it. You can handle the submission using the standard \`on-submit\` attribute on the parent Form block.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Form on-submit="handleSubmit"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Form type="text" placeholder="Username" /&gt;</Text>\r
+    <Text class="text-[var(--color-accent-green)]">  &lt;Action as="submit"&gt;Log In&lt;/Action&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Form&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/media">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/4">Next: Collections &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function V(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-orange)] mb-2">Core Block 4 of 4</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">&lt;Collection&gt; \u2014 Lists & Data</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">Collection handles repetitive data rendering. It wraps its children in a semantically correct list structure, ideal for navigation menus, feeds, tables, and any repeating UI pattern.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Automatic List Item Mapping</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">When you nest a &lt;Text&gt; block directly inside a &lt;Collection&gt;, the framework automatically compiles the &lt;Text&gt; as an &lt;li&gt; tag instead of a heading, ensuring valid HTML structure.</Text>\r
+\r
+  <Stack class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">OmniJS Input</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-orange)]">&lt;Collection&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Apples&lt;/Text&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Bananas&lt;/Text&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Cherries&lt;/Text&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-orange)]">&lt;/Collection&gt;</Text>\r
+    </Stack>\r
+    <Stack class="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl p-5 transition-all duration-300">\r
+      <Text class="font-mono text-[0.65rem] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3 transition-colors duration-300">HTML Output</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;ul&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;li&gt;Apples&lt;/li&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;li&gt;Bananas&lt;/li&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-zinc-800 dark:text-zinc-200">  &lt;li&gt;Cherries&lt;/li&gt;</Text>\r
+      <Text class="font-mono text-[0.75rem] leading-[1.7] text-[var(--color-accent-purple)]">&lt;/ul&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Custom Collection Types</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">By default, Collection compiles to a \`ul\` tag. You can specify \`type="ol"\` to produce an ordered list instead.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;Collection type="ol" class="list-decimal pl-5"&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;First step&lt;/Text&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Second step&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;/Collection&gt;</Text>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Data Tables</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Setting \`type="table"\` transforms the Collection into a semantic HTML table. Nested Collections handle \`thead\`, \`tbody\`, and \`tr\` elements. A \`<Text>\` inside a \`tr\` automatically becomes a \`<td>\` or \`<th>\`.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;Collection type="table" class="w-full text-left"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Collection type="thead"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">    &lt;Collection type="tr"&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text type="th"&gt;Name&lt;/Text&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text type="th"&gt;Status&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">    &lt;/Collection&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Collection&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Collection type="tbody"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">    &lt;Collection type="tr"&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text&gt;OmniJS&lt;/Text&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text&gt;Active&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">    &lt;/Collection&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Collection&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;/Collection&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/form">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/5">Next: Reactivity &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function Y(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-green)] mb-2">Framework Feature</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Reactive State System</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">State management in OmniJS requires no imports, no stores, and no boilerplate. Prefix a variable with ? and the framework handles the rest.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Declaration</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Declare reactive variables inside a script block. The ? prefix tells the compiler to wrap the value in a reactive signal, and the state keyword replaces let/const.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-pink)]">state ?count = 0;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">state ?name = "Developer";</Text>\r
+    <Text class="text-[var(--color-accent-green)]">state ?isOpen = false;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">state ?items = ["one", "two", "three"];</Text>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Mutation</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Mutate state with normal assignment. The reactive proxy detects the change and re-runs only the effects that depend on it.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-zinc-800 dark:text-zinc-200">function increment() {</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">  ?count = ?count + 1;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">function toggle() {</Text>\r
+    <Text class="text-[var(--color-accent-green)]">  ?isOpen = !?isOpen;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">The Reactive Data Flow</Text>\r
+  <Stack class="border-l-4 border-[var(--color-accent-green)] bg-[#00d68f]/10 p-4 rounded-r-xl my-6">\r
+    <Text class="text-zinc-700 dark:text-zinc-300 text-[0.88rem] leading-relaxed font-mono">state ?count = 0 &rarr; createSignal(0) &rarr; bind-text="?count" &rarr; effect() &rarr; DOM updates instantly when ?count changes. No virtual DOM diffing required.</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/4">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/6">Next: Routing &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function G(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Framework Feature</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Built-In Router</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">OmniJS routing is fully abstracted. No imports needed. No config files. Two attributes handle everything.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">navigate-to \u2014 Link to a Page</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Attach to any Action. When clicked, it updates the URL hash and the router signal \u2014 no page reload.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action navigate-to="/"&gt;Home&lt;/Action&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action navigate-to="/docs"&gt;Docs&lt;/Action&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action navigate-to="/about"&gt;About&lt;/Action&gt;</Text>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">route \u2014 Declare a View</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Attach to any Stack. It will only be visible when the current URL hash matches the route value.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Stack route="/"&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Home content&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Stack&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-[var(--color-accent-green)]">&lt;Stack route="/docs"&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Documentation content&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-green)]">&lt;/Stack&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="border-l-4 border-[var(--color-accent-blue)] bg-[#00c2ff]/10 p-4 rounded-r-xl my-6">\r
+    <Text class="text-zinc-700 dark:text-zinc-300 text-[0.88rem] leading-relaxed">The router uses hash-based URLs (e.g. yoursite.com/#/about). This means it works seamlessly on any static file server without server-side URL rewriting rules. Browser back/forward buttons are fully supported natively.</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/5">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/7">Next: Components &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function q(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-purple)] mb-2">Framework Feature</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Component System</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">Split your UI into reusable .omni files. Import them with a single tag. No dependency injection, no complex module system to learn.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Importing & Using</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Import components at the top level of your file using the Use tag, then call them like standard tags inside your template.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-purple)]">&lt;Use component="./src/Header.omni" name="Header" /&gt;</Text>\r
+    <Text class="text-[var(--color-accent-purple)]">&lt;Use component="./src/Card.omni" name="Card" /&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">&lt;Stack&gt;</Text>\r
+    <Text class="text-[var(--color-accent-purple)]">  &lt;Header /&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Page content&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-purple)]">  &lt;Card /&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">&lt;/Stack&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="w-full mb-10">\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/4 font-mono text-xs text-[var(--color-accent-blue)] font-medium">Dev Mode</Text>\r
+      <Text class="w-3/4 text-sm text-zinc-600 dark:text-zinc-400">Components are fetched dynamically via HTTP when the page renders</Text>\r
+    </Stack>\r
+    <Stack class="border-b border-black/5 dark:border-white/10 flex flex-row py-3">\r
+      <Text class="w-1/4 font-mono text-xs text-[var(--color-accent-blue)] font-medium">Production</Text>\r
+      <Text class="w-3/4 text-sm text-zinc-600 dark:text-zinc-400">CLI compiler statically resolves, bundles, and minifies components into JS</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/6">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/css">Next: Styling (CSS) &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function $(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[780px]">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Framework Feature</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Styling & CSS</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">OmniJS supports traditional styling through \`&lt;style&gt;\` blocks, inline styles, and full compatibility with utility-first frameworks like Tailwind CSS.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">The \`class\` Attribute</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Every OmniJS block supports the standard \`class\` attribute. You can use global classes or utility frameworks directly on the tags.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-zinc-500">&lt;!-- Tailwind CSS Example --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Stack class="flex items-center justify-between p-4 bg-gray-100 rounded-lg"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">  &lt;Text class="text-lg font-bold text-gray-800"&gt;Tailwind in OmniJS&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;/Stack&gt;</Text>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Component Scoped \`&lt;style&gt;\` Blocks</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">You can add a \`&lt;style&gt;\` block anywhere in your \`.omni\` file. The compiler extracts it and efficiently injects it into the document head.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;style&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  .my-custom-card {</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">    background: linear-gradient(to right, #ff0055, #00c2ff);</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">    border-radius: 12px;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">    padding: 2rem;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  }</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;/style&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Stack class="my-custom-card"&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Styled with CSS&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;/Stack&gt;</Text>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Dynamic Inline Styles</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">You can use standard inline styles, and even bind them to reactive state for dynamic styling changes.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">\r
+    <Text class="text-zinc-500">&lt;!-- Static inline style --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Text style="color: red; font-size: 20px;"&gt;Warning&lt;/Text&gt;</Text>\r
+    <Text class="text-zinc-500"></Text>\r
+    <Text class="text-zinc-500">&lt;!-- Dynamic inline style based on state (not implemented yet, coming soon!) --&gt;</Text>\r
+    <Text class="text-zinc-500">&lt;!-- &lt;Stack bind-style="?dynamicStyle"&gt;...&lt;/Stack&gt; --&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/7">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/todo">Next: Build a Todo App &rarr;</Action>\r
+  </Stack>\r
+\r
+  </Stack>`,components:[]},e,a)}function X(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(w,s)=>{e.provides||(e.provides={}),e.provides[w]=s},e.inject=w=>{let s=o;for(;s;){if(s.provides&&w in s.provides)return s.provides[w];s=s.parentContext}console.warn('[OmniJS] Context key "'+w+'" not found in parent ancestry.')};let x=(...w)=>console.log("[OmniJS]",...w);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e;e.todos=e.createSignal([{id:1,text:"Learn OmniJS"},{id:2,text:"Build a Todo App"}],"todos"),e.newTodo=e.createSignal("","newTodo"),e.emptyStyle=e.createSignal("display: none;","emptyStyle"),e.modalStyle=e.createSignal("display: none; opacity: 0;","modalStyle"),u(()=>{e.emptyStyle.value=e.todos.value.length===0?"display: flex;":"display: none;"});function i(){e.modalStyle.value="display: flex; opacity: 1;"}function r(){e.modalStyle.value="display: none; opacity: 0;"}function m(){e.newTodo.value.trim()!==""&&(e.todos.value=[...e.todos.value,{id:Date.now(),text:e.newTodo.value}],e.newTodo.value="")}function t(w){e.todos.value=e.todos.value.filter(s=>s.id!==w)}e.openModal=i,e.closeModal=r,e.addTodo=m,e.removeTodo=t;let n="",z="omni-style-"+Math.abs(n.split("").reduce((w,s)=>(w=(w<<5)-w+s.charCodeAt(0),w&w),0));if(n&&!document.getElementById(z)){let w=document.createElement("style");w.id=z,w.textContent=n,document.head.appendChild(w)}h({templateSource:`<Stack class="max-w-[800px]">
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Full Guide</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Building a Todo App</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">Let's put everything we've learned together! We are going to build a fully functional, animated Todo List application from scratch using OmniJS's 6 core blocks and reactive state.</Text>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">1. Setup the State & Logic</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">First, we need to declare our reactive state. We'll need a list of todos and a string for the new input. Then, we write our functions to add and remove items.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-blue)]">&lt;script&gt;</Text>
+    <Text class="text-zinc-500">  // Reactive state</Text>
+    <Text class="text-[var(--color-accent-pink)]">  state ?todos = [];</Text>
+    <Text class="text-[var(--color-accent-pink)]">  state ?newTodo = "";</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-zinc-500">  // Logic</Text>
+    <Text class="text-[var(--color-accent-blue)]">  function <Text type="span" class="text-zinc-900 dark:text-white">addTodo</Text>() {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    if (?newTodo.trim() === "") return;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    ?todos = [...?todos, { id: Date.now(), text: ?newTodo }];</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    ?newTodo = ""; // Clear input</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    log("Added todo!");</Text>
+    <Text class="text-[var(--color-accent-blue)]">  }</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-[var(--color-accent-blue)]">  function <Text type="span" class="text-zinc-900 dark:text-white">removeTodo</Text>(id) {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    ?todos = ?todos.filter(t => t.id !== id);</Text>
+    <Text class="text-[var(--color-accent-blue)]">  }</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;/script&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">2. Building the UI</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Now we'll use \`Stack\`, \`Text\`, \`Form\`, and \`Action\` to build the interface. We'll bind the input to our \`?newTodo\` state and trigger the \`addTodo\` function.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-pink)]">&lt;Stack class="max-w-md mx-auto mt-10 p-6 bg-white rounded-xl shadow-lg"&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Text class="text-2xl font-bold mb-4"&gt;My Tasks&lt;/Text&gt;</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Stack class="flex gap-2 mb-6"&gt;</Text>
+    <Text class="text-[var(--color-accent-orange)]">    &lt;Form class="flex-1 px-4 py-2 border rounded-lg" bind-value="?newTodo" placeholder="What needs to be done?" /&gt;</Text>
+    <Text class="text-[var(--color-accent-orange)]">    &lt;Action class="px-4 py-2 bg-blue-500 text-white rounded-lg" on-click="addTodo"&gt;Add&lt;/Action&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Stack&gt;</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Stack&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">3. Rendering the List</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">We'll use a \`Collection\` block to iterate through our \`?todos\` array and render each task dynamically. Notice how we use \`{todo.text}\` to display data.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">  &lt;!-- Inside our main Stack --&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">  &lt;Collection data="?todos" as="todo" class="space-y-2"&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">    &lt;Stack class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text&gt;{todo.text}&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-orange)]">      &lt;Action class="text-red-500 text-sm" on-click="removeTodo(todo.id)"&gt;Delete&lt;/Action&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">    &lt;/Stack&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">  &lt;/Collection&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">You're Done!</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">That's all it takes! With just a few lines of OmniJS code, you've built a fully reactive application with state management, dynamic lists, and user input handling.</Text>
+
+  <Stack class="mt-6">
+    <Action class="inline-block px-6 py-3 bg-gradient-to-r from-[var(--color-accent-pink)] to-[var(--color-accent-purple)] text-white rounded-lg font-bold shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 hover:-translate-y-0.5 transition-all" on-click="openModal">Launch Live Todo App \u2728</Action>
+  </Stack>
+
+  <!-- Fullscreen Modal -->
+  <Stack bind-style="?modalStyle" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+    <Stack class="max-w-md w-full mx-4 p-6 bg-white dark:bg-[#0e0e12] rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 relative">
+      <Action class="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl" on-click="closeModal">\xD7</Action>
+      
+      <Text class="text-2xl font-bold mb-4 font-heading text-zinc-900 dark:text-white">My Tasks</Text>
+
+      <Stack class="flex gap-2 mb-6">
+        <Form class="flex-1 px-4 py-2 border border-black/10 dark:border-white/10 bg-zinc-50 dark:bg-white/5 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-pink)] transition-all" bind-value="?newTodo" placeholder="What needs to be done?" />
+        <Action class="px-5 py-2 bg-[var(--color-accent-blue)] text-white rounded-lg font-semibold hover:opacity-90 transition-opacity" on-click="addTodo">Add</Action>
+      </Stack>
+
+      <Stack class="max-h-[50vh] overflow-y-auto pr-2" style="scrollbar-width: thin;">
+        <Collection data="?todos" as="todo" class="space-y-2">
+          <Stack class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-lg">
+            <Text class="text-zinc-800 dark:text-zinc-200">{todo.text}</Text>
+            <Action class="text-red-500 hover:text-red-600 text-sm font-semibold transition-colors px-2 py-1 bg-red-500/10 rounded-md" on-click="removeTodo(todo.id)">Delete</Action>
+          </Stack>
+        </Collection>
+
+        <Stack bind-style="?emptyStyle" class="py-10 flex flex-col justify-center items-center">
+          <Text class="text-4xl mb-3">\u{1F4DD}</Text>
+          <Text class="text-zinc-400 dark:text-zinc-500 font-medium text-sm">No tasks yet. Add one above!</Text>
+        </Stack>
+      </Stack>
+    </Stack>
+  </Stack>
+
+  
+</Stack>`,components:[]},e,a)}function Z(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Stack Block</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The \`Stack\` block is the fundamental layout primitive in OmniJS. It replaces div, section, main, article, and other grouping tags, using depth-tracking to automatically render the correct semantic HTML structure.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">When the renderer encounters a \`Stack\`, it checks the nesting depth. The outermost Stack becomes a \`&lt;main&gt;\`, the next level becomes a \`&lt;section&gt;\`, and subsequent levels become \`&lt;div&gt;\` elements. This guarantees accessible, semantic HTML without thinking about tags.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Stack&gt;</Text>\r
+    <Text class="text-zinc-500">  &lt;!-- Renders as &lt;main&gt; --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Stack class="flex flex-col gap-4"&gt;</Text>\r
+    <Text class="text-zinc-500">    &lt;!-- Renders as &lt;section&gt; --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">    &lt;Stack&gt;</Text>\r
+    <Text class="text-zinc-500">      &lt;!-- Renders as &lt;div&gt; --&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">      &lt;Text&gt;Content here&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">    &lt;/Stack&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Stack&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Stack&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">\r
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>\r
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">\r
+      <Text style="white-space: pre-wrap;">&lt;main class="flex flex-col gap-4"&gt;\r
+  &lt;section&gt;\r
+    &lt;div&gt;\r
+      &lt;p&gt;Content here&lt;/p&gt;\r
+    &lt;/div&gt;\r
+  &lt;/section&gt;\r
+&lt;/main&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>\r
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">\r
+    <Collection type="table" class="w-full text-left text-sm">\r
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">\r
+        <Collection type="tr">\r
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>\r
+        </Collection>\r
+      </Collection>\r
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">class</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">CSS classes to apply. Use utility classes (Tailwind) here.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Override the default semantic tag based on depth (e.g. \`as="nav"\`, \`as="header"\` or \`as="footer"\`).</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">bind-style</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">State Signal</Text>\r
+          <Text type="td" class="px-4 py-3">Reactively bind the inline style to a state variable (e.g. \`?myStyle\`).</Text>\r
+        </Collection>\r
+\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">on-*</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>\r
+          <Text type="td" class="px-4 py-3">Bind any standard JS event (e.g. \`on-click="myFunc"\`).</Text>\r
+        </Collection>\r
+      </Collection>\r
+    </Collection>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/blocks">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/text">Next &rarr;</Action>\r
+  </Stack>\r
+</Stack>`,components:[]},e,a)}function K(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Text Block</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The \`Text\` block handles all typography. Instead of manually specifying \`h1\` through \`h6\`, \`p\`, or \`span\`, the Text block infers its tag based on nesting depth and layout context.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">The renderer tracks the number of \`Text\` elements nested within each other or contextually inside headers. The first \`Text\` element in a tree becomes an \`h1\`, the next an \`h2\`, and anything beyond \`h6\` falls back to a standard \`p\` paragraph tag. Inside tables, it renders as \`td\` or \`th\`.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Text&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">  Title (Renders as &lt;h1&gt;)</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Text&gt;</Text>\r
+    <Text class="text-zinc-800 dark:text-zinc-200">    Subtitle (Renders as &lt;h2&gt;)</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Text&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">\r
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>\r
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">\r
+      <Text style="white-space: pre-wrap;">&lt;h1 class="text-2xl font-bold"&gt;My Website&lt;/h1&gt;\r
+&lt;h2&gt;About Us&lt;/h2&gt;\r
+&lt;p&gt;We build cool things.&lt;/p&gt;\r
+&lt;span&gt;Inline text&lt;/span&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>\r
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">\r
+    <Collection type="table" class="w-full text-left text-sm">\r
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">\r
+        <Collection type="tr">\r
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>\r
+        </Collection>\r
+      </Collection>\r
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">type</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Override the automatic depth tag (e.g. \`type="span"\` or \`type="th"\`).</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Override the auto-inferred heading tag to a custom HTML tag (e.g. \`as="span"\`, \`as="h1"\`, or \`as="p"\`).</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">bind-text</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">State Signal</Text>\r
+          <Text type="td" class="px-4 py-3">Reactively bind the element's textContent to a state variable.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">{?stateVar}</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Syntax</Text>\r
+          <Text type="td" class="px-4 py-3">Inline string interpolation. Evaluated reactively (e.g. \`Hello {?name}\`).</Text>\r
+        </Collection>\r
+      </Collection>\r
+    </Collection>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/stack">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/action">Next &rarr;</Action>\r
+  </Stack>\r
+</Stack>`,components:[]},e,a)}function Q(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Action Block</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The \`Action\` block unifies \`&lt;a&gt;\` links, \`&lt;button&gt;\` elements, and router navigation. It abstracts away the differences between a structural button and a hyperlink.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">If you give an Action a \`navigate-to\` attribute, it behaves like an internal router link. If you give it an \`href\`, it behaves like an external anchor link. If neither is present, it defaults to a standard \`<button>\` that you can bind \`on-click\` listeners to.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">\r
+    <Text class="text-zinc-500">&lt;!-- Router Link --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Action navigate-to="/docs"&gt;Go to Docs&lt;/Action&gt;</Text>\r
+    <Text class="text-zinc-500 mt-2">&lt;!-- External Link --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Action href="https://google.com" target="_blank"&gt;Google&lt;/Action&gt;</Text>\r
+    <Text class="text-zinc-500 mt-2">&lt;!-- Standard Button --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;Action on-click="myFunction"&gt;Click Me!&lt;/Action&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">\r
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>\r
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">\r
+      <Text style="white-space: pre-wrap;">&lt;button class="bg-blue-500"&gt;Click Me&lt;/button&gt;\r
+&lt;a href="https://google.com"&gt;Go to Google&lt;/a&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>\r
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">\r
+    <Collection type="table" class="w-full text-left text-sm">\r
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">\r
+        <Collection type="tr">\r
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>\r
+        </Collection>\r
+      </Collection>\r
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">navigate-to</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Internal client-side route path (e.g. \`/home\`). Uses History API.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">href</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Standard URL. Causes the Action to render as an \`&lt;a&gt;\` tag.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">on-click</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>\r
+          <Text type="td" class="px-4 py-3">Binds the button's click event to a function in the script block.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Forces the element type: \`submit\` creates a form submit button.</Text>\r
+        </Collection>\r
+      </Collection>\r
+    </Collection>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/text">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/form">Next &rarr;</Action>\r
+  </Stack>\r
+</Stack>`,components:[]},e,a)}function tt(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Form Block</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The \`Form\` block unifies all user input elements: input fields, textareas, dropdowns, labels, and the outer form wrapper itself.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">When the renderer encounters a \`Form\` block, it checks if it contains interactive attributes like \`bind-value\` or \`placeholder\`. If it does, it renders as an \`input\`, \`textarea\`, or \`select\`. If it is just a container, it renders as the HTML \`&lt;form&gt;\` wrapper.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">\r
+    <Text class="text-zinc-500">&lt;!-- Outer Form Wrapper --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Form on-submit="handleSubmit"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Form type="label" class="mb-2"&gt;Username&lt;/Form&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">  &lt;Form bind-value="?username" placeholder="Enter name..." /&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Form&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">\r
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>\r
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">\r
+      <Text style="white-space: pre-wrap;">&lt;form&gt;\r
+  &lt;label&gt;Email&lt;/label&gt;\r
+  &lt;input type="email" placeholder="Enter email" /&gt;\r
+&lt;/form&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>\r
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">\r
+    <Collection type="table" class="w-full text-left text-sm">\r
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">\r
+        <Collection type="tr">\r
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>\r
+        </Collection>\r
+      </Collection>\r
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">bind-value</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">State Signal</Text>\r
+          <Text type="td" class="px-4 py-3">Two-way data binds the input value to a reactive state variable.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">type</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">\`text\`, \`password\`, \`email\`, \`textarea\`, \`select\`, or \`label\`.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">placeholder</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Standard HTML placeholder attribute for input fields.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">on-submit</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>\r
+          <Text type="td" class="px-4 py-3">Executes a script function when the form is submitted.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Override default element type to a custom HTML element tag (e.g., \`as="div"\` or \`as="span"\`).</Text>\r
+        </Collection>\r
+      </Collection>\r
+    </Collection>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/action">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/collection">Next &rarr;</Action>\r
+  </Stack>\r
+</Stack>`,components:[]},e,a)}function et(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Collection Block</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The \`Collection\` block is OmniJS's universal iterator. It replaces \`ul\`, \`ol\`, array mapping functions, and HTML table structures entirely.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">By providing the \`data\` attribute pointing to an array state variable, Collection repeats its child nodes for every element in the array. You expose the iterating item via the \`as\` attribute. If no data is provided, it simply acts as a standard list (\`ul\`/\`ol\`) or table component.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">\r
+    <Text class="text-zinc-500">&lt;!-- Iterating over data --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Collection data="?users" as="user"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Stack class="card"&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">    &lt;Text&gt;{user.name}&lt;/Text&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">  &lt;/Stack&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Collection&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">\r
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>\r
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">\r
+      <Text style="white-space: pre-wrap;">&lt;ul&gt;\r
+  &lt;li&gt;Item 1&lt;/li&gt;\r
+  &lt;li&gt;Item 2&lt;/li&gt;\r
+&lt;/ul&gt;</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>\r
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">\r
+    <Collection type="table" class="w-full text-left text-sm">\r
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">\r
+        <Collection type="tr">\r
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>\r
+        </Collection>\r
+      </Collection>\r
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">data</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">State Signal</Text>\r
+          <Text type="td" class="px-4 py-3">The array state variable to iterate over (e.g. \`?myArray\`).</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">If iterating, the alias for the scoped item variable (e.g. \`item\`). If not iterating, overrides the HTML tag type.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">type</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Defaults to \`ul\`. Options: \`ol\`, \`table\`, \`thead\`, \`tbody\`, \`tr\`.</Text>\r
+        </Collection>\r
+      </Collection>\r
+    </Collection>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/form">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/media">Next &rarr;</Action>\r
+  </Stack>\r
+</Stack>`,components:[]},e,a)}function nt(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">\r
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>\r
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Media Block {prop.name} </Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The \`Media\` block handles images, video, audio, and iframes seamlessly based on the file extension or the specified \`type\` attribute.</Text>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>\r
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">When parsing a Media block, OmniJS checks the \`src\` attribute. If it ends in \`.mp4\`, it renders a \`&lt;video&gt;\`. If it contains \`youtube.com\`, it renders an \`&lt;iframe&gt;\`. You can also manually specify \`type="audio"\` or \`type="video"\`.</Text>\r
+\r
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">\r
+    <Text class="text-zinc-500">&lt;!-- Image (Inferred) --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-pink)]">&lt;Media src="/assets/logo.png" alt="Company Logo" /&gt;</Text>\r
+    <Text class="text-zinc-500 mt-2">&lt;!-- Video (Inferred) --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-blue)]">&lt;Media src="/assets/promo.mp4" autoplay loop muted /&gt;</Text>\r
+    <Text class="text-zinc-500 mt-2">&lt;!-- Iframe (Inferred) --&gt;</Text>\r
+    <Text class="text-[var(--color-accent-orange)]">&lt;Media src="https://youtube.com/embed/..." /&gt;</Text>\r
+  </Stack>\r
+\r
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">\r
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>\r
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">\r
+      <Text style="white-space: pre-wrap;">&lt;img src="/logo.png" alt="Logo" /&gt;\r
+&lt;video src="/promo.mp4" autoplay loop&gt;&lt;/video&gt;</Text>\r
+    </Stack>\r
+    <Media src="https://imgs.search.brave.com/QdSP9nzKYCWbK9V1mqXIb7zrteln-Kn0TZtLyuFfw-s/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90ZW1w/bGF0ZS5jYW52YS5j/b20vRUFHMW1PS19k/emMvMi8wLzE2MDB3/LUVOczdWU0tKYmd3/LmpwZw" alt="Company Logo"></Media>\r
+    <Media src="/assets/promo.mp4" autoplay loop muted></Media>\r
+    <Media src="https://youtube.com/embed/..." ></Media>\r
+  </Stack>\r
+\r
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>\r
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">\r
+    <Collection type="table" class="w-full text-left text-sm">\r
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">\r
+        <Collection type="tr">\r
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>\r
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>\r
+        </Collection>\r
+      </Collection>\r
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">src</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">The URL or relative path to the media file.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">type</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Explicitly override the media type: \`video\`, \`audio\`, \`iframe\`, \`img\`.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">alt</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Alternative text for accessibility (images).</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">autoplay / muted</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Boolean</Text>\r
+          <Text type="td" class="px-4 py-3">Standard HTML5 media attributes are passed directly through.</Text>\r
+        </Collection>\r
+        <Collection type="tr">\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>\r
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>\r
+          <Text type="td" class="px-4 py-3">Override default element type to a custom HTML element tag (e.g. \`as="picture"\`).</Text>\r
+        </Collection>\r
+      </Collection>\r
+    </Collection>\r
+  </Stack>\r
+\r
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">\r
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/collection">&larr; Previous</Action>\r
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/use">Next &rarr;</Action>\r
+  </Stack>\r
+</Stack>`,components:[]},e,a)}function ot(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px]">
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-purple)] mb-2">Deep Dive</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Use Block</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6 transition-colors duration-300">The \`Use\` block is OmniJS's mechanism for importing external files and registering them as components. It allows you to build modular, maintainable applications by breaking down UI into reusable pieces.</Text>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Component Registration</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Use the \`component\` attribute to specify the file path, and the \`name\` attribute to define the tag name you will use.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-purple)]">&lt;Use component="./src/Header.omni" name="Header" /&gt;</Text>
+    <Text class="text-zinc-500"></Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;Header&gt;&lt;/Header&gt;</Text>
+  </Stack>
+
+  <Stack class="bg-zinc-100/50 dark:bg-white/5 p-4 rounded-lg my-6">
+    <Text class="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Equivalent HTML output</Text>
+    <Stack class="font-mono text-[0.75rem] text-zinc-700 dark:text-zinc-300">
+      <Text>&lt;!-- Injects the DOM content from Header.omni here --&gt;</Text>
+    </Stack>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2 transition-colors duration-300">Passing Props</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">Once registered, custom components behave like regular elements. You can pass arbitrary attributes which become available in the component's internal \`props\` object.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-[var(--color-accent-blue)]">&lt;Header title="My Dashboard" theme="dark"&gt;&lt;/Header&gt;</Text>
+  </Stack>
+
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4 transition-colors duration-300">And inside \`Header.omni\`, you can access these props natively using interpolation:</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">&lt;!-- Inside Header.omni --&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;Stack class="header {props.theme}"&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">  &lt;Text&gt;{props.title}&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Stack&gt;</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/media">&larr; Previous</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/block/portal">Next &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function rt(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(t,n)=>{e.provides||(e.provides={}),e.provides[t]=n},e.inject=t=>{let n=o;for(;n;){if(n.provides&&t in n.provides)return n.provides[t];n=n.parentContext}console.warn('[OmniJS] Context key "'+t+'" not found in parent ancestry.')};let x=(...t)=>console.log("[OmniJS]",...t);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e,i="",r="omni-style-"+Math.abs(i.split("").reduce((t,n)=>(t=(t<<5)-t+n.charCodeAt(0),t&t),0));if(i&&!document.getElementById(r)){let t=document.createElement("style");t.id=r,t.textContent=i,document.head.appendChild(t)}h({templateSource:`<Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">
+  <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Portal Block</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The \`Portal\` block is a layout primitive that renders its children into a target DOM node outside the parent component's DOM structure (such as \`#modal-root\` or the document body), while maintaining complete reactivity and scope binding with the parent component hierarchy.</Text>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 text-[0.92rem] leading-relaxed mb-4">When a component contains a \`Portal\`, the framework renders the portal's children dynamically inside the target container specified by the \`target\` attribute. A hidden placeholder is left in the original tree. Visibility is reactively synced: if any ancestor of the portal's original placeholder is hidden (e.g. via \`bind-show\` or class hiding), the portal content is automatically hidden. If the parent component is unmounted, the portal content is automatically removed from the document.</Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-6 overflow-x-auto">
+    <Text class="text-[var(--color-accent-pink)]">&lt;Portal target="#modal-root"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Stack class="modal-backdrop flex items-center justify-center"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    &lt;Stack class="modal-content bg-white p-6 rounded-xl"&gt;</Text>
+    <Text class="text-zinc-500 font-mono">      &lt;!-- Reacts to parent component state --&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">      &lt;Text&gt;Current Count: {?count}&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-orange)]">      &lt;Action on-click="closeModal"&gt;Close Modal&lt;/Action&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">    &lt;/Stack&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;/Stack&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Portal&gt;</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12]">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Attribute</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">target</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
+          <Text type="td" class="px-4 py-3">CSS selector string (e.g. \`#modal-root\`, \`.portal-target\`). Default is \`"body"\`.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">class</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
+          <Text type="td" class="px-4 py-3">CSS class to apply to the rendered portal wrapper.</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/block/use">&larr; Previous</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/reactivity">Next: Reactivity &rarr;</Action>
+  </Stack>
+</Stack>`,components:[]},e,a)}function mt(a,c={},o=null){window.globalOmniContext||(window.globalOmniContext={currentPage:d()});let e={createSignal:p,effect:u,createResource:v,useForm:y,navigate:f,getRouterSignal:d,beforeEach:T,props:c,...window.globalOmniContext};e.parentContext=o,e.provide=(s,S)=>{e.provides||(e.provides={}),e.provides[s]=S},e.inject=s=>{let S=o;for(;S;){if(S.provides&&s in S.provides)return S.provides[s];S=S.parentContext}console.warn('[OmniJS] Context key "'+s+'" not found in parent ancestry.')};let x=(...s)=>console.log("[OmniJS]",...s);e.log=x;let{navigate:g,getRouterSignal:l,provide:k,inject:b}=e;function i(){let s=document.documentElement,S=s.getAttribute("data-theme")==="dark"?"light":"dark";s.setAttribute("data-theme",S)}e.isMobileMenuOpen=e.createSignal(!1,"isMobileMenuOpen"),e.sidebarClass=e.createSignal("responsive-sidebar w-[260px] min-w-[260px] bg-white/90 dark:bg-[#0e0e12]/85 backdrop-blur-md border-r border-black/10 dark:border-white/10 p-7 flex flex-col fixed inset-y-0 left-0 z-50 overflow-y-auto transition-colors duration-300","sidebarClass"),e.backdropStyle=e.createSignal("display: none; opacity: 0;","backdropStyle");function r(){e.isMobileMenuOpen.value=!e.isMobileMenuOpen.value}function m(){e.isMobileMenuOpen.value=!1}u(()=>{let s="responsive-sidebar w-[260px] min-w-[260px] bg-white/90 dark:bg-[#0e0e12]/85 backdrop-blur-md border-r border-black/10 dark:border-white/10 p-7 flex flex-col fixed inset-y-0 left-0 z-50 overflow-y-auto transition-colors duration-300";e.sidebarClass.value=e.isMobileMenuOpen.value?s+" open":s,e.backdropStyle.value=e.isMobileMenuOpen.value?"display: block; opacity: 1; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; backdrop-filter: blur(4px); transition: opacity 0.3s;":"display: none; opacity: 0; pointer-events: none;"}),e.isTutorialsOpen=e.createSignal(!0,"isTutorialsOpen"),e.tutorialStyle=e.createSignal("max-height: 500px; opacity: 1; margin-top: 0px;","tutorialStyle"),e.arrowStyle=e.createSignal("transform: rotate(0deg); transition: transform 0.3s ease;","arrowStyle"),e.isDeepDiveOpen=e.createSignal(!1,"isDeepDiveOpen"),e.deepDiveStyle=e.createSignal("max-height: 0px; opacity: 0; margin-top: -10px; overflow: hidden;","deepDiveStyle"),e.deepDiveArrowStyle=e.createSignal("transform: rotate(-90deg); transition: transform 0.3s ease;","deepDiveArrowStyle");function t(){e.isTutorialsOpen.value=!e.isTutorialsOpen.value,e.isTutorialsOpen.value?(e.tutorialStyle.value="display: flex; flex-direction: column;",e.arrowStyle.value="transform: rotate(180deg); transition: transform 0.3s ease;"):(e.arrowStyle.value="transform: rotate(0deg); transition: transform 0.3s ease;",e.tutorialStyle.value="display: none;")}function n(){e.isDeepDiveOpen.value=!e.isDeepDiveOpen.value,e.isDeepDiveOpen.value?(e.deepDiveStyle.value="max-height: 500px; opacity: 1; margin-top: 0px;",e.deepDiveArrowStyle.value="transform: rotate(0deg); transition: transform 0.3s ease;"):(e.deepDiveStyle.value="max-height: 0px; opacity: 0; margin-top: -10px; overflow: hidden;",e.deepDiveArrowStyle.value="transform: rotate(-90deg); transition: transform 0.3s ease;")}e.toggleTheme=i,e.toggleMobileMenu=r,e.closeMobileMenu=m,e.toggleTutorials=t,e.toggleDeepDives=n;let z=`\r
+  @media (max-width: 1023px) {\r
+    .responsive-sidebar {\r
+      transform: translateX(-100%);\r
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);\r
+    }\r
+    .responsive-sidebar.open {\r
+      transform: translateX(0);\r
+    }\r
+    .responsive-main {\r
+      margin-left: 0 !important;\r
+      padding-top: 80px !important;\r
+      padding-left: 1.5rem !important;\r
+      padding-right: 1.5rem !important;\r
+    }\r
+  }\r
+`,C="omni-style-"+Math.abs(z.split("").reduce((s,S)=>(s=(s<<5)-s+S.charCodeAt(0),s&s),0));if(z&&!document.getElementById(C)){let s=document.createElement("style");s.id=C,s.textContent=z,document.head.appendChild(s)}h({templateSource:`<Stack class="flex min-h-screen w-full">\r
+  <Stack bind-style="?backdropStyle" on-click="closeMobileMenu"></Stack>\r
+  \r
+  <!-- Mobile Header -->\r
+  <Stack class="lg:hidden flex flex-row items-center justify-between px-6 py-4 bg-white/90 dark:bg-[#0e0e12]/90 backdrop-blur-md border-b border-black/10 dark:border-white/10 fixed top-0 left-0 right-0 z-40 w-full">\r
+    <Action class="font-heading text-xl font-extrabold bg-gradient-to-br from-[var(--color-accent-pink)] via-[var(--color-accent-purple)] to-[var(--color-accent-blue)] bg-clip-text text-transparent cursor-pointer" navigate-to="/">OmniJS</Action>\r
+    <Stack class="flex flex-row items-center gap-3">\r
+      <Action class="w-9 h-9 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 flex items-center justify-center cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-colors" on-click="toggleTheme">\u25D1</Action>\r
+      <Action class="w-9 h-9 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 flex items-center justify-center cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-colors" on-click="toggleMobileMenu">\u2630</Action>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <!-- \u2550\u2550\u2550 Sidebar \u2550\u2550\u2550 -->\r
+  <Stack bind-class="?sidebarClass" on-click="closeMobileMenu">\r
+    <Stack class="flex flex-row items-center justify-between mb-1 px-2">\r
+      <Action class="font-heading text-2xl font-extrabold bg-gradient-to-br from-[var(--color-accent-pink)] via-[var(--color-accent-purple)] to-[var(--color-accent-blue)] bg-clip-text text-transparent cursor-pointer tracking-tight" navigate-to="/">OmniJS</Action>\r
+      <Action class="w-9 h-9 rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 flex items-center justify-center cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-colors" on-click="toggleTheme">\u25D1</Action>\r
+    </Stack>\r
+    <Text class="text-[0.7rem] text-zinc-500 tracking-widest uppercase font-semibold px-2 mb-4">Documentation</Text>\r
+\r
+    <!-- Search UI removed -->\r
+\r
+    <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold mt-3 mb-2 px-2">Overview</Text>\r
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/">Getting Started</Action>\r
+\r
+    <Stack class="flex items-center justify-between mt-7 mb-2 px-2 cursor-pointer group" on-click="toggleTutorials">\r
+      <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold group-hover:text-black dark:group-hover:text-white transition-colors">Interactive Tutorial</Text>\r
+      <Text class="text-zinc-400 text-xs" bind-style="?arrowStyle">\u25BC</Text>\r
+    </Stack>\r
+    \r
+    <Stack bind-style="?tutorialStyle" class="overflow-y-auto overflow-x-hidden max-h-[40vh]">\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/1">1. Layout & Stack</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/2">2. Typography</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/3">3. Interaction</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/media">4. Media</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/form">5. Forms</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/4">6. Collections</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/5">7. Reactivity</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/6">8. Routing</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/7">9. Components</Action>\r
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/todo">11. Build a Todo App</Action>\r
+    </Stack>\r
+\r
+    <Stack class="flex items-center justify-between mt-7 mb-2 px-2 cursor-pointer group" on-click="toggleDeepDives">\r
+      <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold group-hover:text-black dark:group-hover:text-white transition-colors">Deep Dives</Text>\r
+      <Text class="text-zinc-400 text-xs" bind-style="?deepDiveArrowStyle">\u25BC</Text>\r
+    </Stack>\r
+\r
+    <Stack bind-style="?deepDiveStyle" class="overflow-y-auto overflow-x-hidden max-h-[40vh] transition-all duration-300">\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/blocks">Core Blocks Overview</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/stack">Stack Block</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/text">Text Block</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/action">Action Block</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/form">Form Block</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/collection">Collection Block</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/media">Media Block</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/use">Use Block</Action>\r
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/portal">Portal Block</Action>\r
+    </Stack>\r
+\r
+    <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold mt-7 mb-2 px-2">API Reference</Text>\r
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/reactivity">Reactivity & Signals</Action>\r
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/resource">createResource</Action>\r
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/context">Context provide/inject</Action>\r
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/form">Form useForm</Action>\r
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/router">Router beforeEach</Action>\r
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/devtools">DevTools Explorer</Action>\r
+\r
+    <Stack class="mt-auto px-2">\r
+      <Text class="text-[0.7rem] text-zinc-500 font-mono">v1.0.0</Text>\r
+    </Stack>\r
+  </Stack>\r
+\r
+  <!-- \u2550\u2550\u2550 Main Content with Routes \u2550\u2550\u2550 -->\r
+  <Stack class="responsive-main flex-1 ml-[260px] py-14 px-16 min-h-screen max-w-[1100px] transition-colors duration-300">\r
+    <Stack route="/">\r
+      <Home></Home>\r
+    </Stack>\r
+    <Stack route="/blocks">\r
+      <Stack>\r
+      <Text>Hello world</Text>\r
+      </Stack>\r
+      <Blocks></Blocks>\r
+    </Stack>\r
+    \r
+    <!-- Deep Dive Pages -->\r
+    <Stack route="/block/stack" class="w-full h-full">\r
+      \r
+      <BlockStack></BlockStack>\r
+    </Stack>\r
+    <Stack route="/block/text" class="w-full h-full">\r
+      \r
+      <BlockText></BlockText>\r
+    </Stack>\r
+    <Stack route="/block/action" class="w-full h-full">\r
+      \r
+      <BlockAction></BlockAction>\r
+    </Stack>\r
+    <Stack route="/block/form" class="w-full h-full">\r
+      \r
+      <BlockForm></BlockForm>\r
+    </Stack>\r
+    <Stack route="/block/collection" class="w-full h-full">\r
+      \r
+      <BlockCollection></BlockCollection>\r
+    </Stack>\r
+    <Stack route="/block/media" class="w-full h-full">\r
+      \r
+      <BlockMedia name="Joshua Block"></BlockMedia>\r
+    </Stack>\r
+    <Stack route="/block/use" class="w-full h-full">\r
+      \r
+      <BlockUse></BlockUse>\r
+    </Stack>\r
+    <Stack route="/block/portal" class="w-full h-full">\r
+      \r
+      <BlockPortal></BlockPortal>\r
+    </Stack>\r
+\r
+    <Stack route="/api/reactivity">\r
+      <Reactivity></Reactivity>\r
+    </Stack>\r
+    <Stack route="/api/resource">\r
+      <Resource></Resource>\r
+    </Stack>\r
+    <Stack route="/api/context">\r
+      <Context></Context>\r
+    </Stack>\r
+    <Stack route="/api/form">\r
+      <Form></Form>\r
+    </Stack>\r
+    <Stack route="/api/router">\r
+      <Router></Router>\r
+    </Stack>\r
+    <Stack route="/api/devtools">\r
+      <DevTools></DevTools>\r
+    </Stack>\r
+    <Stack route="/tutorial/1"><Tutorial1></Tutorial1></Stack>\r
+    <Stack route="/tutorial/2"><Tutorial2></Tutorial2></Stack>\r
+    <Stack route="/tutorial/3"><Tutorial3></Tutorial3></Stack>\r
+    <Stack route="/tutorial/media"><TutorialMedia></TutorialMedia></Stack>\r
+    <Stack route="/tutorial/form"><TutorialForm></TutorialForm></Stack>\r
+    <Stack route="/tutorial/4"><Tutorial4></Tutorial4></Stack>\r
+    <Stack route="/tutorial/5"><Tutorial5></Tutorial5></Stack>\r
+    <Stack route="/tutorial/6"><Tutorial6></Tutorial6></Stack>\r
+    <Stack route="/tutorial/7"><Tutorial7></Tutorial7></Stack>\r
+    <Stack route="/tutorial/css"><TutorialCSS></TutorialCSS></Stack>\r
+    <Stack route="/tutorial/todo"><TutorialTodo></TutorialTodo></Stack>\r
+  </Stack>\r
+\r
+</Stack>`,components:[{name:"Home",mount:_},{name:"Blocks",mount:I},{name:"Reactivity",mount:D},{name:"Resource",mount:P},{name:"Context",mount:j},{name:"Form",mount:F},{name:"Router",mount:B},{name:"DevTools",mount:N},{name:"Tutorial1",mount:H},{name:"Tutorial2",mount:L},{name:"Tutorial3",mount:J},{name:"TutorialMedia",mount:U},{name:"TutorialForm",mount:W},{name:"Tutorial4",mount:V},{name:"Tutorial5",mount:Y},{name:"Tutorial6",mount:G},{name:"Tutorial7",mount:q},{name:"TutorialCSS",mount:$},{name:"TutorialTodo",mount:X},{name:"BlockStack",mount:Z},{name:"BlockText",mount:K},{name:"BlockAction",mount:Q},{name:"BlockForm",mount:tt},{name:"BlockCollection",mount:et},{name:"BlockMedia",mount:nt},{name:"BlockUse",mount:ot},{name:"BlockPortal",mount:rt}]},e,a)}export{mt as default};

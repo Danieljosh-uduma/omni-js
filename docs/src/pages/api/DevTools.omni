@@ -1,0 +1,62 @@
+<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">DevTools Reactivity Explorer Hook</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">Inspect registered signals and trace state mutations in real-time. In OmniJS, the compiler automatically passes variable names as debug labels to the global DevTools hook.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Global Hook Hook API</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    The framework exposes a global `window.__OMNI_DEVTOOLS__` hook in the browser. You can inspect active signals, view history of mutations, and subscribe to events.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Subscribe to reactivity events (creation, updates)</Text>
+    <Text class="text-[var(--color-accent-blue)]">if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">  window.__OMNI_DEVTOOLS__.onEvent(({ type, payload }) => {</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">    if (type === "mutation") {</Text>
+    <Text class="text-[var(--color-accent-pink)]">      console.log(`[DevTools] Signal "${payload.name}" changed:`, payload.oldValue, "->", payload.newValue);</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">    }</Text>
+    <Text class="text-zinc-850 dark:text-zinc-200">  });</Text>
+    <Text class="text-[var(--color-accent-blue)]">}</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-3">API Schema</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    `window.__OMNI_DEVTOOLS__` exposes the following members:
+  </Text>
+  
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12] my-4">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Member</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">signals</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Map&lt;Number, Object&gt;</Text>
+          <Text type="td" class="px-4 py-3">Map of active signals indexed by unique IDs, mapping to `{ name, value }`.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">history</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Array&lt;Object&gt;</Text>
+          <Text type="td" class="px-4 py-3">Audit history log of all mutations: `{ id, name, oldValue, newValue, timestamp }`.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">onEvent</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>
+          <Text type="td" class="px-4 py-3">Registers listener for reactivity events. Returns an unsubscribe function.</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/api/router">&larr; Router & Guards</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/">Finish &rarr;</Action>
+  </Stack>
+</Stack>

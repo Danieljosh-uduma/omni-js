@@ -5703,10 +5703,15 @@ function parse4(source) {
     ast.style.content = styleMatch[2] || styleMatch[3] || "";
     source = source.replace(styleMatch[0], "");
   }
-  const useRegex = /<Use\s+component=["'](.*?)["']\s+name=["'](.*?)["']\s*\/>/g;
+  const useRegex = /<Use\b([^>]*?)(?:\/?>)/g;
   let useMatch;
   while ((useMatch = useRegex.exec(source)) !== null) {
-    ast.components.push({ src: useMatch[1], name: useMatch[2] });
+    const attrStr = useMatch[1];
+    const componentMatch = attrStr.match(/component=["'](.*?)["']/);
+    const nameMatch = attrStr.match(/name=["'](.*?)["']/);
+    if (componentMatch && nameMatch) {
+      ast.components.push({ src: componentMatch[1], name: nameMatch[1] });
+    }
   }
   source = source.replace(useRegex, "");
   ast.templateSource = source.trim();
@@ -5746,6 +5751,7 @@ function transformReactivitySyntax(scriptContent) {
   }
   walkAST(ast, {
     VariableDeclaration(node) {
+      const isTopLevel = ast.body.includes(node);
       for (const decl of node.declarations) {
         if (decl.id.name && decl.id.name.startsWith("__OMNI_STATE_")) {
           const varName = decl.id.name.replace("__OMNI_STATE_", "");
@@ -5767,10 +5773,8 @@ function transformReactivitySyntax(scriptContent) {
               text: `context.${varName} = context.createSignal()`
             });
           }
-        } else if (decl.init && (decl.init.type === "ArrowFunctionExpression" || decl.init.type === "FunctionExpression")) {
-          if (decl.id.name) {
-            functionsToAttach.push(decl.id.name);
-          }
+        } else if (decl.id.name && isTopLevel) {
+          functionsToAttach.push(decl.id.name);
         }
       }
     },
@@ -5833,6 +5837,7 @@ function createSignal(initialValue) {
   }
   let rawValue = makeReactive(initialValue);
   return {
+    __isSignal: true,
     get value() {
       if (currentSubscriber) {
         subscribers.add(currentSubscriber);
@@ -5865,9 +5870,9 @@ var currentPath = null;
 function initRouter() {
   if (routerInitialized)
     return currentPath;
-  const getPath = () => window.location.hash.slice(1) || "/";
+  const getPath = () => window.location.pathname || "/";
   currentPath = createSignal(getPath());
-  window.addEventListener("hashchange", () => {
+  window.addEventListener("popstate", () => {
     currentPath.value = getPath();
     window.scrollTo({ top: 0, behavior: "instant" });
   });
@@ -5877,7 +5882,8 @@ function initRouter() {
 function navigate(path) {
   if (!currentPath)
     initRouter();
-  window.location.hash = path;
+  window.history.pushState(null, "", path);
+  currentPath.value = path;
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 function getRouterSignal() {
@@ -5887,8 +5893,15 @@ function getRouterSignal() {
 }
 
 // src/renderer.js
-function preprocessTemplate(templateSource) {
+function preprocessTemplate(templateSource, components = []) {
   let src = templateSource;
+  for (const comp of components) {
+    const compName = comp.name;
+    const startTagRegex = new RegExp("<" + compName + "\\b", "g");
+    const endTagRegex = new RegExp("</" + compName + "\\b", "g");
+    src = src.replace(startTagRegex, `<omni-component-${compName.toLowerCase()} omni-name="${compName}"`);
+    src = src.replace(endTagRegex, `</omni-component-${compName.toLowerCase()}>`);
+  }
   src = src.replace(/navigate::to=/g, "navigate-to=");
   src = src.replace(/bind::([a-zA-Z0-9_-]+)=/g, "bind-$1=");
   src = src.replace(/on::([a-zA-Z0-9_-]+)=/g, "on-$1=");
@@ -5899,7 +5912,7 @@ function preprocessTemplate(templateSource) {
   return src;
 }
 async function render(ast, context, container) {
-  const preprocessed = preprocessTemplate(ast.templateSource);
+  const preprocessed = preprocessTemplate(ast.templateSource, ast.components || []);
   const parser = new DOMParser();
   const doc = parser.parseFromString(preprocessed, "text/html");
   const rootNodes = Array.from(doc.body.childNodes);
@@ -5945,12 +5958,18 @@ async function walkAndTransform(node, context, state, components) {
   if (node.nodeType !== Node.ELEMENT_NODE)
     return null;
   const tagName = node.tagName.toLowerCase();
-  const customComp = components.find((c) => c.name.toLowerCase() === tagName);
+  let customComp = null;
+  if (tagName.startsWith("omni-component-")) {
+    const originalName = node.getAttribute("omni-name");
+    customComp = components.find((c) => c.name === originalName);
+  }
   if (customComp) {
     const wrapper = document.createElement("div");
-    wrapper.className = `omni-component-${tagName}`;
+    wrapper.className = `omni-component-${customComp.name.toLowerCase()}`;
     const props = {};
     Array.from(node.attributes).forEach((attr) => {
+      if (attr.name === "omni-name")
+        return;
       let val = attr.value;
       if (val.includes("{") && val.includes("}")) {
         val = val.replace(/\{[?]?([a-zA-Z0-9_.]+)\}/g, (match, path) => {
@@ -5980,29 +5999,39 @@ async function walkAndTransform(node, context, state, components) {
         props[attr.name] = val;
       }
     });
-    try {
-      const res = await fetch(customComp.src);
-      const source = await res.text();
-      if (window.__omni_mount) {
-        await window.__omni_mount(source, wrapper, props);
+    if (customComp.mount) {
+      await customComp.mount(wrapper, props, context);
+    } else {
+      try {
+        const res = await fetch(customComp.src, { cache: "no-cache" });
+        const source = await res.text();
+        if (window.__omni_mount) {
+          await window.__omni_mount(source, wrapper, props, context);
+        }
+      } catch (e) {
+        console.error(`[OmniJS] Failed to load component <${customComp.name}>`, e);
       }
-    } catch (e) {
-      console.error(`[OmniJS] Failed to load component <${customComp.name}>`, e);
     }
     return wrapper;
   }
   let el;
   let newState = { ...state };
+  const asAttr = node.getAttribute("as");
   if (tagName === "stack") {
     newState.stackDepth++;
-    if (newState.stackDepth === 1)
+    if (asAttr) {
+      el = document.createElement(asAttr);
+    } else if (newState.stackDepth === 1) {
       el = document.createElement("main");
-    else if (newState.stackDepth === 2)
+    } else if (newState.stackDepth === 2) {
       el = document.createElement("section");
-    else
+    } else {
       el = document.createElement("div");
+    }
   } else if (tagName === "text") {
-    if (state.collectionType === "tr") {
+    if (asAttr) {
+      el = document.createElement(asAttr);
+    } else if (state.collectionType === "tr") {
       const type = node.getAttribute("type");
       el = document.createElement(type === "th" ? "th" : "td");
     } else if (state.inCollection && (state.collectionType === "ul" || state.collectionType === "ol" || !state.collectionType)) {
@@ -6014,7 +6043,6 @@ async function walkAndTransform(node, context, state, components) {
       el = document.createElement("p");
     }
   } else if (tagName === "action") {
-    const asAttr = node.getAttribute("as");
     if (asAttr === "link" || !asAttr && node.hasAttribute("href")) {
       el = document.createElement("a");
       if (node.hasAttribute("href"))
@@ -6025,53 +6053,67 @@ async function walkAndTransform(node, context, state, components) {
     } else if (node.hasAttribute("navigate-to")) {
       el = document.createElement("button");
       el.setAttribute("role", "link");
+    } else if (asAttr) {
+      el = document.createElement(asAttr);
     } else {
       el = document.createElement("button");
     }
   } else if (tagName === "collection") {
-    const type = node.getAttribute("type") || "ul";
-    if (type === "table")
-      el = document.createElement("table");
-    else if (type === "thead")
-      el = document.createElement("thead");
-    else if (type === "tbody")
-      el = document.createElement("tbody");
-    else if (type === "tr")
-      el = document.createElement("tr");
-    else if (type === "ol")
-      el = document.createElement("ol");
-    else
-      el = document.createElement("ul");
-    newState.inCollection = true;
-    newState.collectionType = type;
-  } else if (tagName === "media") {
-    const src = node.getAttribute("src") || "";
-    const type = node.getAttribute("type");
-    if (type === "video" || src.endsWith(".mp4") || src.endsWith(".webm")) {
-      el = document.createElement("video");
-    } else if (type === "audio" || src.endsWith(".mp3") || src.endsWith(".wav")) {
-      el = document.createElement("audio");
-    } else if (type === "iframe" || src.includes("youtube.com") || src.includes("vimeo.com")) {
-      el = document.createElement("iframe");
+    if (asAttr) {
+      el = document.createElement(asAttr);
     } else {
-      el = document.createElement("img");
+      const type = node.getAttribute("type") || "ul";
+      if (type === "table")
+        el = document.createElement("table");
+      else if (type === "thead")
+        el = document.createElement("thead");
+      else if (type === "tbody")
+        el = document.createElement("tbody");
+      else if (type === "tr")
+        el = document.createElement("tr");
+      else if (type === "ol")
+        el = document.createElement("ol");
+      else
+        el = document.createElement("ul");
+      newState.collectionType = type;
+    }
+    newState.inCollection = true;
+  } else if (tagName === "media") {
+    if (asAttr) {
+      el = document.createElement(asAttr);
+    } else {
+      const src = node.getAttribute("src") || "";
+      const type = node.getAttribute("type");
+      if (type === "video" || src.endsWith(".mp4") || src.endsWith(".webm")) {
+        el = document.createElement("video");
+      } else if (type === "audio" || src.endsWith(".mp3") || src.endsWith(".wav")) {
+        el = document.createElement("audio");
+      } else if (type === "iframe" || src.includes("youtube.com") || src.includes("vimeo.com")) {
+        el = document.createElement("iframe");
+      } else {
+        el = document.createElement("img");
+      }
     }
   } else if (tagName === "form") {
-    const isInputControl = node.hasAttribute("bind-value") || node.hasAttribute("placeholder") || node.hasAttribute("type");
-    if (!newState.inForm && !isInputControl) {
-      el = document.createElement("form");
-      newState.inForm = true;
+    if (asAttr) {
+      el = document.createElement(asAttr);
     } else {
-      const type = node.getAttribute("type") || "text";
-      if (type === "textarea")
-        el = document.createElement("textarea");
-      else if (type === "select")
-        el = document.createElement("select");
-      else if (type === "label")
-        el = document.createElement("label");
-      else {
-        el = document.createElement("input");
-        el.type = type;
+      const isInputControl = node.hasAttribute("bind-value") || node.hasAttribute("placeholder") || node.hasAttribute("type");
+      if (!newState.inForm && !isInputControl) {
+        el = document.createElement("form");
+        newState.inForm = true;
+      } else {
+        const type = node.getAttribute("type") || "text";
+        if (type === "textarea")
+          el = document.createElement("textarea");
+        else if (type === "select")
+          el = document.createElement("select");
+        else if (type === "label")
+          el = document.createElement("label");
+        else {
+          el = document.createElement("input");
+          el.type = type;
+        }
       }
     }
   } else {
@@ -6085,6 +6127,8 @@ async function walkAndTransform(node, context, state, components) {
     const name = attr.name;
     const value = attr.value;
     if (name === "route")
+      return;
+    if (name === "as")
       return;
     if (name === "navigate-to") {
       el.addEventListener("click", (e) => {
@@ -6100,18 +6144,30 @@ async function walkAndTransform(node, context, state, components) {
       const rootSignalName = parts[0];
       if (context[rootSignalName]) {
         effect(() => {
-          let val = context[rootSignalName].value;
+          let val = context[rootSignalName];
+          if (val && typeof val === "object" && val.__isSignal === true) {
+            val = val.value;
+          }
           for (let i = 1; i < parts.length; i++) {
             if (val && typeof val === "object") {
               val = val[parts[i]];
+              if (val && typeof val === "object" && val.__isSignal === true) {
+                val = val.value;
+              }
+            } else {
+              val = void 0;
             }
           }
           if (prop === "text")
-            el.textContent = val;
+            el.textContent = val !== void 0 && val !== null ? val : "";
           else if (prop === "value") {
             if (el.value !== val) {
               el.value = val;
             }
+          } else if (prop === "show") {
+            el.style.display = val ? "" : "none";
+          } else if (prop === "hide") {
+            el.style.display = val ? "none" : "";
           } else
             el.setAttribute(prop, val);
         });
@@ -6135,20 +6191,6 @@ async function walkAndTransform(node, context, state, components) {
       const eventName = name.replace("on-", "");
       if (context[value]) {
         el.addEventListener(eventName, context[value]);
-      }
-      return;
-    }
-    if (name.startsWith("animate-")) {
-      const trigger = name.replace("animate-", "");
-      if (trigger === "load" && typeof gsap !== "undefined") {
-        if (value.startsWith("from:")) {
-          try {
-            const configStr = value.replace("from:", "").trim();
-            const config = new Function(`return ${configStr}`)();
-            gsap.from(el, config);
-          } catch (e) {
-          }
-        }
       }
       return;
     }
@@ -6194,6 +6236,95 @@ async function walkAndTransform(node, context, state, components) {
   return el;
 }
 
+// src/resource.js
+function createResource(fetcher, source) {
+  const [value, setValue] = createSignal(void 0);
+  const [loading, setLoading] = createSignal(false);
+  const [error, setError] = createSignal(null);
+  async function execute(sourceVal) {
+    setLoading(true);
+    setError(null);
+    try {
+      const data2 = await fetcher(sourceVal);
+      setValue(data2);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+    } finally {
+      setLoading(false);
+    }
+  }
+  if (source) {
+    effect(() => {
+      const sourceVal = typeof source === "function" ? source() : source && source.value !== void 0 ? source.value : source;
+      execute(sourceVal);
+    });
+  } else {
+    execute(void 0);
+  }
+  return {
+    get value() {
+      return value.value;
+    },
+    get loading() {
+      return loading.value;
+    },
+    get error() {
+      return error.value;
+    },
+    $value: value,
+    $loading: loading,
+    $error: error
+  };
+}
+
+// src/form.js
+function useForm({ initialValues = {}, validate = () => ({}) }) {
+  const initialErrors = {};
+  Object.keys(initialValues).forEach((key) => {
+    initialErrors[key] = "";
+  });
+  const values = createSignal({ ...initialValues });
+  const errors = createSignal(initialErrors);
+  const submitting = createSignal(false);
+  function reset2() {
+    values.value = { ...initialValues };
+    errors.value = { ...initialErrors };
+    submitting.value = false;
+  }
+  function handleSubmit(onSubmit) {
+    return async function(e) {
+      if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+      }
+      const rawValues = values.value;
+      const validationErrors = validate(rawValues) || {};
+      const finalErrors = { ...initialErrors };
+      Object.keys(validationErrors).forEach((key) => {
+        finalErrors[key] = validationErrors[key] || "";
+      });
+      errors.value = finalErrors;
+      const hasErrors = Object.keys(validationErrors).some((key) => validationErrors[key]);
+      if (!hasErrors) {
+        submitting.value = true;
+        try {
+          await onSubmit(rawValues);
+        } catch (err) {
+          console.error("[OmniJS Form] Submission failed:", err);
+        } finally {
+          submitting.value = false;
+        }
+      }
+    };
+  }
+  return {
+    values,
+    errors,
+    submitting,
+    handleSubmit,
+    reset: reset2
+  };
+}
+
 // src/error.js
 function handleOmniError(message, error) {
   console.error(`%c \u{1F6A8} OmniJS Error `, "background: #ff2d7b; color: white; border-radius: 4px; padding: 2px 6px; font-weight: bold;", message);
@@ -6220,7 +6351,7 @@ function handleOmniError(message, error) {
 }
 
 // src/index.js
-async function mount(source, container, props = {}) {
+async function mount(source, container, props = {}, parentContext = null) {
   let ast;
   try {
     ast = parse4(source);
@@ -6237,18 +6368,37 @@ async function mount(source, container, props = {}) {
   const context = {
     createSignal,
     effect,
+    createResource,
+    useForm,
     navigate,
     getRouterSignal,
     log: (...args) => console.log("[OmniJS]", ...args),
     props,
+    parentContext,
+    provide(key, value) {
+      if (!context.provides)
+        context.provides = {};
+      context.provides[key] = value;
+    },
+    inject(key) {
+      let parent = parentContext;
+      while (parent) {
+        if (parent.provides && key in parent.provides) {
+          return parent.provides[key];
+        }
+        parent = parent.parentContext;
+      }
+      console.warn(`[OmniJS] Context key "${key}" not found in parent ancestry.`);
+      return void 0;
+    },
     ...window.globalOmniContext
   };
   if (ast.script.content) {
     const transformedScript = transformReactivitySyntax(ast.script.content);
     try {
       const runScript = new Function("context", `
-        const { createSignal, effect, navigate, getRouterSignal, log, props } = context;
-        ${transformedScript}
+        const { createSignal, effect, createResource, useForm, provide, inject, navigate, getRouterSignal, log, props } = context;
+        \${transformedScript}
       `);
       runScript(context);
     } catch (e) {
@@ -6287,7 +6437,7 @@ if (typeof window !== "undefined") {
     scripts.forEach(async (script) => {
       let source = script.textContent;
       if (script.hasAttribute("src")) {
-        const res = await fetch(script.getAttribute("src"));
+        const res = await fetch(script.getAttribute("src"), { cache: "no-cache" });
         source = await res.text();
       }
       const container = document.createElement("div");

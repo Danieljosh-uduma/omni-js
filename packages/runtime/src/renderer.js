@@ -4,8 +4,22 @@ import { navigate, getRouterSignal } from './router.js';
 // Pre-process template source to convert OmniJS attribute syntax
 // into valid HTML data-* attributes before DOMParser touches it.
 // This prevents the browser from stripping colons in attribute names.
-function preprocessTemplate(templateSource) {
+// Pre-process template source to convert OmniJS attribute syntax
+// into valid HTML data-* attributes before DOMParser touches it.
+// This prevents the browser from stripping colons in attribute names.
+function preprocessTemplate(templateSource, components = []) {
   let src = templateSource;
+  
+  // Case-sensitively rewrite custom component tags to prevent case-insensitivity issues
+  // in DOMParser. (e.g., <Header ...> → <omni-component-header omni-name="Header" ...>)
+  for (const comp of components) {
+    const compName = comp.name;
+    const startTagRegex = new RegExp('<' + compName + '\\b', 'g');
+    const endTagRegex = new RegExp('</' + compName + '\\b', 'g');
+    src = src.replace(startTagRegex, `<omni-component-${compName.toLowerCase()} omni-name="${compName}"`);
+    src = src.replace(endTagRegex, `</omni-component-${compName.toLowerCase()}>`);
+  }
+
   // navigate::to="..." → navigate-to="..."
   src = src.replace(/navigate::to=/g, 'navigate-to=');
   // bind::prop="..." → bind-prop="..."  
@@ -24,7 +38,7 @@ function preprocessTemplate(templateSource) {
 }
 
 export async function render(ast, context, container) {
-  const preprocessed = preprocessTemplate(ast.templateSource);
+  const preprocessed = preprocessTemplate(ast.templateSource, ast.components || []);
   const parser = new DOMParser();
   const doc = parser.parseFromString(preprocessed, 'text/html');
   const rootNodes = Array.from(doc.body.childNodes);
@@ -78,15 +92,76 @@ async function walkAndTransform(node, context, state, components) {
 
   const tagName = node.tagName.toLowerCase();
   
+  if (tagName === 'portal') {
+    const target = node.getAttribute('target') || 'body';
+    const targetEl = document.querySelector(target) || document.body;
+    
+    // Create placeholder to stay in the original DOM hierarchy
+    const placeholder = document.createElement('span');
+    placeholder.style.display = 'none';
+    placeholder.className = 'omni-portal-placeholder';
+    
+    // Create the wrapper for portal contents
+    const portalContent = document.createElement('div');
+    portalContent.className = 'omni-portal-content';
+    
+    // Transfer non-internal attributes from <Portal> to the content wrapper
+    Array.from(node.attributes).forEach(attr => {
+      if (attr.name !== 'target' && attr.name !== 'as') {
+        portalContent.setAttribute(attr.name, attr.value);
+      }
+    });
+
+    // Render children into portalContent
+    for (const child of Array.from(node.childNodes)) {
+      const childEl = await walkAndTransform(child, context, state, components);
+      if (childEl) portalContent.appendChild(childEl);
+    }
+    
+    // Append content to the target destination
+    targetEl.appendChild(portalContent);
+
+    // Sync visibility of the portal content with the placeholder's visibility in the document tree
+    const syncVisibility = () => {
+      const isVisible = placeholder.isConnected && (placeholder.offsetParent !== null || placeholder.getBoundingClientRect().width > 0);
+      portalContent.style.display = isVisible ? '' : 'none';
+    };
+
+    // Watch for attribute changes (style, class) in the entire document to detect parent visibility toggles
+    const observer = new MutationObserver(syncVisibility);
+    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['style', 'class'] });
+
+    // Initial sync
+    setTimeout(syncVisibility, 0);
+
+    // Clean up observer and portal content when the placeholder is removed from the DOM
+    const disconnectObserver = new MutationObserver(() => {
+      if (!placeholder.isConnected) {
+        portalContent.remove();
+        observer.disconnect();
+        disconnectObserver.disconnect();
+      }
+    });
+    disconnectObserver.observe(document.body, { childList: true, subtree: true });
+
+    return placeholder;
+  }
+
   // ── Custom Component Handling ──
-  const customComp = components.find(c => c.name.toLowerCase() === tagName);
+  let customComp = null;
+  if (tagName.startsWith('omni-component-')) {
+    const originalName = node.getAttribute('omni-name');
+    customComp = components.find(c => c.name === originalName);
+  }
+
   if (customComp) {
     const wrapper = document.createElement('div');
-    wrapper.className = `omni-component-${tagName}`;
+    wrapper.className = `omni-component-${customComp.name.toLowerCase()}`;
     
     // Extract props
     const props = {};
     Array.from(node.attributes).forEach(attr => {
+      if (attr.name === 'omni-name') return;
       let val = attr.value;
       if (val.includes('{') && val.includes('}')) {
         val = val.replace(/\{[?]?([a-zA-Z0-9_.]+)\}/g, (match, path) => {
@@ -118,14 +193,20 @@ async function walkAndTransform(node, context, state, components) {
       }
     });
 
-    try {
-      const res = await fetch(customComp.src);
-      const source = await res.text();
-      if (window.__omni_mount) {
-        await window.__omni_mount(source, wrapper, props);
+    if (customComp.mount) {
+      // Production mode - statically compiled component
+      await customComp.mount(wrapper, props, context);
+    } else {
+      // Dev mode - fetch and dynamically compile/mount
+      try {
+        const res = await fetch(customComp.src, { cache: 'no-cache' });
+        const source = await res.text();
+        if (window.__omni_mount) {
+          await window.__omni_mount(source, wrapper, props, context);
+        }
+      } catch(e) {
+        console.error(`[OmniJS] Failed to load component <${customComp.name}>`, e);
       }
-    } catch(e) {
-      console.error(`[OmniJS] Failed to load component <${customComp.name}>`, e);
     }
     return wrapper;
   }
@@ -134,14 +215,24 @@ async function walkAndTransform(node, context, state, components) {
   let newState = { ...state };
 
   // ── 1. Map Core Blocks to Semantic HTML ──
+  const asAttr = node.getAttribute('as');
+
   if (tagName === 'stack') {
     newState.stackDepth++;
-    if (newState.stackDepth === 1) el = document.createElement('main');
-    else if (newState.stackDepth === 2) el = document.createElement('section');
-    else el = document.createElement('div');
+    if (asAttr) {
+      el = document.createElement(asAttr);
+    } else if (newState.stackDepth === 1) {
+      el = document.createElement('main');
+    } else if (newState.stackDepth === 2) {
+      el = document.createElement('section');
+    } else {
+      el = document.createElement('div');
+    }
   } 
   else if (tagName === 'text') {
-    if (state.collectionType === 'tr') {
+    if (asAttr) {
+      el = document.createElement(asAttr);
+    } else if (state.collectionType === 'tr') {
       const type = node.getAttribute('type');
       el = document.createElement(type === 'th' ? 'th' : 'td');
     } else if (state.inCollection && (state.collectionType === 'ul' || state.collectionType === 'ol' || !state.collectionType)) {
@@ -154,7 +245,6 @@ async function walkAndTransform(node, context, state, components) {
     }
   }
   else if (tagName === 'action') {
-    const asAttr = node.getAttribute('as');
     if (asAttr === 'link' || (!asAttr && node.hasAttribute('href'))) {
       el = document.createElement('a');
       if (node.hasAttribute('href')) el.href = node.getAttribute('href');
@@ -164,50 +254,61 @@ async function walkAndTransform(node, context, state, components) {
     } else if (node.hasAttribute('navigate-to')) {
       el = document.createElement('button');
       el.setAttribute('role', 'link');
+    } else if (asAttr) {
+      el = document.createElement(asAttr);
     } else {
       el = document.createElement('button');
     }
   }
   else if (tagName === 'collection') {
-    const type = node.getAttribute('type') || 'ul';
-    if (type === 'table') el = document.createElement('table');
-    else if (type === 'thead') el = document.createElement('thead');
-    else if (type === 'tbody') el = document.createElement('tbody');
-    else if (type === 'tr') el = document.createElement('tr');
-    else if (type === 'ol') el = document.createElement('ol');
-    else el = document.createElement('ul');
-    
+    if (asAttr) {
+      el = document.createElement(asAttr);
+    } else {
+      const type = node.getAttribute('type') || 'ul';
+      if (type === 'table') el = document.createElement('table');
+      else if (type === 'thead') el = document.createElement('thead');
+      else if (type === 'tbody') el = document.createElement('tbody');
+      else if (type === 'tr') el = document.createElement('tr');
+      else if (type === 'ol') el = document.createElement('ol');
+      else el = document.createElement('ul');
+      newState.collectionType = type;
+    }
     newState.inCollection = true;
-    newState.collectionType = type;
   }
   else if (tagName === 'media') {
-    const src = node.getAttribute('src') || '';
-    const type = node.getAttribute('type');
-    
-    if (type === 'video' || src.endsWith('.mp4') || src.endsWith('.webm')) {
-      el = document.createElement('video');
-    } else if (type === 'audio' || src.endsWith('.mp3') || src.endsWith('.wav')) {
-      el = document.createElement('audio');
-    } else if (type === 'iframe' || src.includes('youtube.com') || src.includes('vimeo.com')) {
-      el = document.createElement('iframe');
+    if (asAttr) {
+      el = document.createElement(asAttr);
     } else {
-      el = document.createElement('img');
+      const src = node.getAttribute('src') || '';
+      const type = node.getAttribute('type');
+      if (type === 'video' || src.endsWith('.mp4') || src.endsWith('.webm')) {
+        el = document.createElement('video');
+      } else if (type === 'audio' || src.endsWith('.mp3') || src.endsWith('.wav')) {
+        el = document.createElement('audio');
+      } else if (type === 'iframe' || src.includes('youtube.com') || src.includes('vimeo.com')) {
+        el = document.createElement('iframe');
+      } else {
+        el = document.createElement('img');
+      }
     }
   }
   else if (tagName === 'form') {
-    const isInputControl = node.hasAttribute('bind-value') || node.hasAttribute('placeholder') || node.hasAttribute('type');
-    
-    if (!newState.inForm && !isInputControl) {
-      el = document.createElement('form');
-      newState.inForm = true;
+    if (asAttr) {
+      el = document.createElement(asAttr);
     } else {
-      const type = node.getAttribute('type') || 'text';
-      if (type === 'textarea') el = document.createElement('textarea');
-      else if (type === 'select') el = document.createElement('select');
-      else if (type === 'label') el = document.createElement('label');
-      else {
-        el = document.createElement('input');
-        el.type = type;
+      const isInputControl = node.hasAttribute('bind-value') || node.hasAttribute('placeholder') || node.hasAttribute('type');
+      if (!newState.inForm && !isInputControl) {
+        el = document.createElement('form');
+        newState.inForm = true;
+      } else {
+        const type = node.getAttribute('type') || 'text';
+        if (type === 'textarea') el = document.createElement('textarea');
+        else if (type === 'select') el = document.createElement('select');
+        else if (type === 'label') el = document.createElement('label');
+        else {
+          el = document.createElement('input');
+          el.type = type;
+        }
       }
     }
   }
@@ -228,6 +329,7 @@ async function walkAndTransform(node, context, state, components) {
 
     // Route — handled in step 5
     if (name === 'route') return;
+    if (name === 'as') return;
 
     // Navigate
     if (name === 'navigate-to') {
@@ -247,18 +349,32 @@ async function walkAndTransform(node, context, state, components) {
       
       if (context[rootSignalName]) {
         effect(() => {
-          let val = context[rootSignalName].value;
+          let val = context[rootSignalName];
+          if (val && typeof val === 'object' && val.__isSignal === true) {
+            val = val.value;
+          }
           for (let i = 1; i < parts.length; i++) {
             if (val && typeof val === 'object') {
               val = val[parts[i]];
+              if (val && typeof val === 'object' && val.__isSignal === true) {
+                val = val.value;
+              }
+            } else {
+              val = undefined;
             }
           }
           
-          if (prop === 'text') el.textContent = val;
+          if (prop === 'text') el.textContent = val !== undefined && val !== null ? val : '';
           else if (prop === 'value') {
             if (el.value !== val) {
               el.value = val;
             }
+          }
+          else if (prop === 'show') {
+            el.style.display = val ? '' : 'none';
+          }
+          else if (prop === 'hide') {
+            el.style.display = val ? 'none' : '';
           }
           else el.setAttribute(prop, val);
         });
@@ -290,20 +406,7 @@ async function walkAndTransform(node, context, state, components) {
       return;
     }
 
-    // Animation
-    if (name.startsWith('animate-')) {
-      const trigger = name.replace('animate-', '');
-      if (trigger === 'load' && typeof gsap !== 'undefined') {
-        if (value.startsWith('from:')) {
-          try {
-            const configStr = value.replace('from:', '').trim();
-            const config = (new Function(`return ${configStr}`))();
-            gsap.from(el, config);
-          } catch(e) { /* silently skip */ }
-        }
-      }
-      return;
-    }
+
 
     // Legacy if:: — skip
     if (name === 'if-condition') return;

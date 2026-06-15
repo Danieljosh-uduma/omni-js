@@ -3,8 +3,9 @@
 import esbuild from 'esbuild';
 import { omniEsbuildPlugin } from '../src/plugin.js';
 import path from 'path';
-
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -39,7 +40,7 @@ if (command === 'build') {
         
         // Rewrite the type="text/omni" script to a standard bundle mount
         html = html.replace(/<script[^>]*type=["']text\/omni["'][^>]*src=["'](.*?)["'][^>]*><\/script>/gi, 
-          `<div id="omni-root"></div>\n  <script type="module">\n    import mount from './App.js';\n    mount(document.getElementById('omni-root'));\n  </script>`
+          `<div id="omni-root"></div>\n  <script type="module">\n    import mount from '/App.js';\n    mount(document.getElementById('omni-root'));\n  </script>`
         );
         
         // Ensure outdir directory exists
@@ -80,6 +81,30 @@ if (command === 'build') {
   try {
     fs.mkdirSync(projectDir, { recursive: true });
     fs.mkdirSync(path.join(projectDir, 'src'), { recursive: true });
+
+    // Copy omni-runtime.js statically during project creation
+    const require = createRequire(import.meta.url);
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    let runtimePath;
+    try {
+      runtimePath = require.resolve('@omni/runtime/dist/omni-runtime.js');
+    } catch (e) {
+      // Fallback for monorepo development
+      runtimePath = path.resolve(__dirname, '../../runtime/dist/omni-runtime.js');
+    }
+
+    if (fs.existsSync(runtimePath)) {
+      fs.copyFileSync(runtimePath, path.join(projectDir, 'omni-runtime.js'));
+      console.log('Pre-included omni-runtime.js inside project.');
+    } else {
+      console.warn('Warning: Could not find @omni/runtime/dist/omni-runtime.js to pre-include.');
+    }
+
+    // gitignore
+    const gitignoreContent = `node_modules\ndist\noutput.css\n`;
+    fs.writeFileSync(path.join(projectDir, '.gitignore'), gitignoreContent, 'utf8');
     
     // package.json
     const packageJson = {
@@ -88,13 +113,12 @@ if (command === 'build') {
       type: "module",
       scripts: {
         "predev": "node -e \"require('fs').copyFileSync('./node_modules/@omni/runtime/dist/omni-runtime.js', './omni-runtime.js')\"",
-        "dev": "concurrently \"tailwindcss -i ./src/input.css -o ./output.css --watch\" \"npx serve .\"",
+        "dev": "concurrently \"tailwindcss -i ./src/input.css -o ./output.css --watch\" \"npx serve -s .\"",
         "build": "tailwindcss -i ./src/input.css -o ./output.css --minify && omni build src/App.omni --outdir=dist"
       },
       dependencies: {
         "@omni/cli": "^1.0.0",
-        "@omni/runtime": "^1.0.0",
-        "gsap": "^3.15.0"
+        "@omni/runtime": "^1.0.0"
       },
       devDependencies: {
         "@tailwindcss/cli": "^4.3.1",
@@ -111,8 +135,8 @@ if (command === 'build') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${projectName}</title>
-  <link href="./output.css" rel="stylesheet">
-  <script src="./omni-runtime.js" type="module"></script>
+  <link href="/output.css" rel="stylesheet">
+  <script src="/omni-runtime.js" type="module"></script>
 </head>
 <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300">
   <script type="text/omni" src="./src/App.omni"></script>
@@ -155,7 +179,7 @@ if (command === 'build') {
     fs.writeFileSync(path.join(projectDir, 'src', 'App.omni'), appOmni, 'utf8');
 
     // src/input.css
-    const inputCss = `@import "tailwindcss";`;
+    const inputCss = `@import "tailwindcss";\n@source "./**/*.omni";`;
     fs.writeFileSync(path.join(projectDir, 'src', 'input.css'), inputCss, 'utf8');
 
     console.log(`\n🎉 Project "${projectName}" created successfully!`);

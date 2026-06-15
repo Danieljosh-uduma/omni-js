@@ -43,7 +43,7 @@
 
   <Stack class="flex justify-between items-center mt-12 pt-6 border-t border-black/5 dark:border-white/10">
     <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/tutorial/7">&larr; Previous</Action>
-    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/animation">Next: Animations &rarr;</Action>
+    <Action class="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors" navigate-to="/tutorial/todo">Next: Build a Todo App &rarr;</Action>
   </Stack>
 
   </Stack>

@@ -1,6 +1,6 @@
 <Stack class="max-w-[800px] animate-in slide-in-from-bottom-4 duration-500">
   <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-blue)] mb-2">Deep Dive</Text>
-  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Media Block</Text>
+  <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">Media Block {prop.name} </Text>
   <Text class="text-zinc-600 dark:text-zinc-400 text-[0.95rem] leading-relaxed mb-6">The `Media` block handles images, video, audio, and iframes seamlessly based on the file extension or the specified `type` attribute.</Text>
 
   <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-2">How it works</Text>
@@ -21,6 +21,9 @@
       <Text style="white-space: pre-wrap;">&lt;img src="/logo.png" alt="Logo" /&gt;
 &lt;video src="/promo.mp4" autoplay loop&gt;&lt;/video&gt;</Text>
     </Stack>
+    <Media src="https://imgs.search.brave.com/QdSP9nzKYCWbK9V1mqXIb7zrteln-Kn0TZtLyuFfw-s/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90ZW1w/bGF0ZS5jYW52YS5j/b20vRUFHMW1PS19k/emMvMi8wLzE2MDB3/LUVOczdWU0tKYmd3/LmpwZw" alt="Company Logo"></Media>
+    <Media src="/assets/promo.mp4" autoplay loop muted></Media>
+    <Media src="https://youtube.com/embed/..." ></Media>
   </Stack>
 
   <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-4">Attribute Reference</Text>
@@ -53,6 +56,11 @@
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">autoplay / muted</Text>
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Boolean</Text>
           <Text type="td" class="px-4 py-3">Standard HTML5 media attributes are passed directly through.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
+          <Text type="td" class="px-4 py-3">Override default element type to a custom HTML element tag (e.g. `as="picture"`).</Text>
         </Collection>
       </Collection>
     </Collection>

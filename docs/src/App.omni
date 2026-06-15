@@ -38,44 +38,18 @@
     if (?isTutorialsOpen) {
       ?tutorialStyle = "display: flex; flex-direction: column;";
       ?arrowStyle = "transform: rotate(180deg); transition: transform 0.3s ease;";
-      if (typeof gsap !== 'undefined') {
-        setTimeout(() => {
-          gsap.fromTo(".tutorial-link", 
-            { opacity: 0, x: -10 }, 
-            { opacity: 1, x: 0, stagger: 0.02, duration: 0.3, ease: "power2.out" }
-          );
-        }, 10);
-      }
     } else {
       ?arrowStyle = "transform: rotate(0deg); transition: transform 0.3s ease;";
-      if (typeof gsap !== 'undefined') {
-        gsap.to(".tutorial-link", {
-          opacity: 0,
-          x: -10,
-          stagger: 0.01,
-          duration: 0.2,
-          onComplete: () => {
-            ?tutorialStyle = "display: none;";
-          }
-        });
-      } else {
-        ?tutorialStyle = "display: none;";
-      }
+      ?tutorialStyle = "display: none;";
     }
   }
 
   function toggleDeepDives() {
     ?isDeepDiveOpen = !?isDeepDiveOpen;
     if (?isDeepDiveOpen) {
-      if (typeof gsap !== 'undefined') {
-        gsap.to(".deepdive-link", { opacity: 1, x: 0, stagger: 0.05, duration: 0.3, ease: "power2.out", overwrite: true });
-      }
       ?deepDiveStyle = "max-height: 500px; opacity: 1; margin-top: 0px;";
       ?deepDiveArrowStyle = "transform: rotate(0deg); transition: transform 0.3s ease;";
     } else {
-      if (typeof gsap !== 'undefined') {
-        gsap.to(".deepdive-link", { opacity: 0, x: -10, duration: 0.2, overwrite: true });
-      }
       ?deepDiveStyle = "max-height: 0px; opacity: 0; margin-top: -10px; overflow: hidden;";
       ?deepDiveArrowStyle = "transform: rotate(-90deg); transition: transform 0.3s ease;";
     }
@@ -84,21 +58,25 @@
   // Search logic removed
 </script>
 
-<Use component="./src/Home.omni" name="Home" />
-<Use component="./src/Blocks.omni" name="Blocks" />
-<Use component="./src/Reactivity.omni" name="Reactivity" />
-<Use component="./src/Tutorial1.omni" name="Tutorial1" />
-<Use component="./src/Tutorial2.omni" name="Tutorial2" />
-<Use component="./src/Tutorial3.omni" name="Tutorial3" />
-<Use component="./src/TutorialMedia.omni" name="TutorialMedia" />
-<Use component="./src/TutorialForm.omni" name="TutorialForm" />
-<Use component="./src/Tutorial4.omni" name="Tutorial4" />
-<Use component="./src/Tutorial5.omni" name="Tutorial5" />
-<Use component="./src/Tutorial6.omni" name="Tutorial6" />
-<Use component="./src/Tutorial7.omni" name="Tutorial7" />
-<Use component="./src/TutorialCSS.omni" name="TutorialCSS" />
-<Use component="./src/TutorialAnimation.omni" name="TutorialAnimation" />
-<Use component="./src/TutorialTodo.omni" name="TutorialTodo" />
+<Use component="./src/pages/Home.omni" name="Home">
+<Use component="./src/pages/Blocks.omni" name="Blocks">
+<Use component="./src/pages/api/Reactivity.omni" name="Reactivity">
+<Use component="./src/pages/api/Resource.omni" name="Resource">
+<Use component="./src/pages/api/Context.omni" name="Context">
+<Use component="./src/pages/api/Form.omni" name="Form">
+<Use component="./src/pages/api/Router.omni" name="Router">
+<Use component="./src/pages/api/DevTools.omni" name="DevTools">
+<Use component="./src/pages/tutorials/Tutorial1.omni" name="Tutorial1">
+<Use component="./src/pages/tutorials/Tutorial2.omni" name="Tutorial2">
+<Use component="./src/pages/tutorials/Tutorial3.omni" name="Tutorial3">
+<Use component="./src/pages/tutorials/TutorialMedia.omni" name="TutorialMedia">
+<Use component="./src/pages/tutorials/TutorialForm.omni" name="TutorialForm">
+<Use component="./src/pages/tutorials/Tutorial4.omni" name="Tutorial4">
+<Use component="./src/pages/tutorials/Tutorial5.omni" name="Tutorial5">
+<Use component="./src/pages/tutorials/Tutorial6.omni" name="Tutorial6">
+<Use component="./src/pages/tutorials/Tutorial7.omni" name="Tutorial7">
+<Use component="./src/pages/tutorials/TutorialCSS.omni" name="TutorialCSS">
+<Use component="./src/pages/tutorials/TutorialTodo.omni" name="TutorialTodo">
 
 <Stack class="flex min-h-screen w-full">
   <Stack bind-style="?backdropStyle" on-click="closeMobileMenu"></Stack>
@@ -140,9 +118,7 @@
       <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/5">7. Reactivity</Action>
       <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/6">8. Routing</Action>
       <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/7">9. Components</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/css">10. Styling (CSS)</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/animation">11. Animations</Action>
-      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/todo">12. Build a Todo App</Action>
+      <Action class="tutorial-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/tutorial/todo">11. Build a Todo App</Action>
     </Stack>
 
     <Stack class="flex items-center justify-between mt-7 mb-2 px-2 cursor-pointer group" on-click="toggleDeepDives">
@@ -159,10 +135,16 @@
       <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/collection">Collection Block</Action>
       <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/media">Media Block</Action>
       <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/use">Use Block</Action>
+      <Action class="deepdive-link w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/block/portal">Portal Block</Action>
     </Stack>
 
     <Text class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold mt-7 mb-2 px-2">API Reference</Text>
-    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/reactivity">Reactivity</Action>
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/reactivity">Reactivity & Signals</Action>
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/resource">createResource</Action>
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/context">Context provide/inject</Action>
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/form">Form useForm</Action>
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/router">Router beforeEach</Action>
+    <Action class="w-full text-left text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 px-3 py-2 rounded-md transition-colors mb-[1px]" navigate-to="/api/devtools">DevTools Explorer</Action>
 
     <Stack class="mt-auto px-2">
       <Text class="text-[0.7rem] text-zinc-500 font-mono">v1.0.0</Text>
@@ -175,43 +157,63 @@
       <Home></Home>
     </Stack>
     <Stack route="/blocks">
+      <Stack>
+      <Text>Hello world</Text>
+      </Stack>
       <Blocks></Blocks>
     </Stack>
     
     <!-- Deep Dive Pages -->
     <Stack route="/block/stack" class="w-full h-full">
-      <Use component="./src/BlockStack.omni" name="BlockStack" />
+      <Use component="./src/pages/blocks/Stack.omni" name="BlockStack">
       <BlockStack></BlockStack>
     </Stack>
     <Stack route="/block/text" class="w-full h-full">
-      <Use component="./src/BlockText.omni" name="BlockText" />
+      <Use component="./src/pages/blocks/Text.omni" name="BlockText">
       <BlockText></BlockText>
     </Stack>
     <Stack route="/block/action" class="w-full h-full">
-      <Use component="./src/BlockAction.omni" name="BlockAction" />
+      <Use component="./src/pages/blocks/Action.omni" name="BlockAction">
       <BlockAction></BlockAction>
     </Stack>
     <Stack route="/block/form" class="w-full h-full">
-      <Use component="./src/BlockForm.omni" name="BlockForm" />
+      <Use component="./src/pages/blocks/Form.omni" name="BlockForm">
       <BlockForm></BlockForm>
     </Stack>
     <Stack route="/block/collection" class="w-full h-full">
-      <Use component="./src/BlockCollection.omni" name="BlockCollection" />
+      <Use component="./src/pages/blocks/Collection.omni" name="BlockCollection">
       <BlockCollection></BlockCollection>
     </Stack>
     <Stack route="/block/media" class="w-full h-full">
-      <Use component="./src/BlockMedia.omni" name="BlockMedia" />
-      <BlockMedia></BlockMedia>
+      <Use component="./src/pages/blocks/Media.omni" name="BlockMedia">
+      <BlockMedia name="Joshua Block"></BlockMedia>
     </Stack>
     <Stack route="/block/use" class="w-full h-full">
-      <Use component="./src/BlockUse.omni" name="BlockUse" />
+      <Use component="./src/pages/blocks/Use.omni" name="BlockUse">
       <BlockUse></BlockUse>
     </Stack>
-
-    <Stack route="/api" class="w-full h-full">
+    <Stack route="/block/portal" class="w-full h-full">
+      <Use component="./src/pages/blocks/Portal.omni" name="BlockPortal">
+      <BlockPortal></BlockPortal>
     </Stack>
-    <Stack route="/reactivity">
+
+    <Stack route="/api/reactivity">
       <Reactivity></Reactivity>
+    </Stack>
+    <Stack route="/api/resource">
+      <Resource></Resource>
+    </Stack>
+    <Stack route="/api/context">
+      <Context></Context>
+    </Stack>
+    <Stack route="/api/form">
+      <Form></Form>
+    </Stack>
+    <Stack route="/api/router">
+      <Router></Router>
+    </Stack>
+    <Stack route="/api/devtools">
+      <DevTools></DevTools>
     </Stack>
     <Stack route="/tutorial/1"><Tutorial1></Tutorial1></Stack>
     <Stack route="/tutorial/2"><Tutorial2></Tutorial2></Stack>
@@ -223,7 +225,6 @@
     <Stack route="/tutorial/6"><Tutorial6></Tutorial6></Stack>
     <Stack route="/tutorial/7"><Tutorial7></Tutorial7></Stack>
     <Stack route="/tutorial/css"><TutorialCSS></TutorialCSS></Stack>
-    <Stack route="/tutorial/animation"><TutorialAnimation></TutorialAnimation></Stack>
     <Stack route="/tutorial/todo"><TutorialTodo></TutorialTodo></Stack>
   </Stack>
 

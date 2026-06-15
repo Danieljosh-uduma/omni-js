@@ -25,10 +25,15 @@ export function parse(source) {
   }
 
   // Extract <Use> tags
-  const useRegex = /<Use\s+component=["'](.*?)["']\s+name=["'](.*?)["']\s*\/>/g;
+  const useRegex = /<Use\b([^>]*?)(?:\/?>)/g;
   let useMatch;
   while ((useMatch = useRegex.exec(source)) !== null) {
-    ast.components.push({ src: useMatch[1], name: useMatch[2] });
+    const attrStr = useMatch[1];
+    const componentMatch = attrStr.match(/component=["'](.*?)["']/);
+    const nameMatch = attrStr.match(/name=["'](.*?)["']/);
+    if (componentMatch && nameMatch) {
+      ast.components.push({ src: componentMatch[1], name: nameMatch[1] });
+    }
   }
   source = source.replace(useRegex, '');
 
@@ -76,6 +81,7 @@ export function transformReactivitySyntax(scriptContent) {
 
   walkAST(ast, {
     VariableDeclaration(node) {
+      const isTopLevel = ast.body.includes(node);
       for (const decl of node.declarations) {
         if (decl.id.name && decl.id.name.startsWith('__OMNI_STATE_')) {
           const varName = decl.id.name.replace('__OMNI_STATE_', '');
@@ -89,19 +95,17 @@ export function transformReactivitySyntax(scriptContent) {
             replacements.push({
               start: decl.init.end,
               end: node.end,
-              text: `)` 
+              text: `, "${varName}")` 
             });
           } else {
              replacements.push({
                start: node.start,
                end: node.end,
-               text: `context.${varName} = context.createSignal()`
+               text: `context.${varName} = context.createSignal(undefined, "${varName}")`
              });
           }
-        } else if (decl.init && (decl.init.type === 'ArrowFunctionExpression' || decl.init.type === 'FunctionExpression')) {
-          if (decl.id.name) {
-            functionsToAttach.push(decl.id.name);
-          }
+        } else if (decl.id.name && isTopLevel) {
+          functionsToAttach.push(decl.id.name);
         }
       }
     },

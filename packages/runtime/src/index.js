@@ -1,10 +1,12 @@
 import { parse, transformReactivitySyntax } from './parser.js';
 import { render } from './renderer.js';
 import { createSignal, effect } from './reactivity.js';
-import { initRouter, navigate, getRouterSignal } from './router.js';
+import { createResource } from './resource.js';
+import { useForm } from './form.js';
+import { initRouter, navigate, getRouterSignal, beforeEach } from './router.js';
 import { handleOmniError } from './error.js';
 
-export async function mount(source, container, props = {}) {
+export async function mount(source, container, props = {}, parentContext = null) {
   let ast;
   try {
     ast = parse(source);
@@ -26,10 +28,29 @@ export async function mount(source, container, props = {}) {
   const context = {
     createSignal,
     effect,
+    createResource,
+    useForm,
     navigate,
     getRouterSignal,
+    beforeEach,
     log: (...args) => console.log('[OmniJS]', ...args),
     props,
+    parentContext,
+    provide(key, value) {
+      if (!context.provides) context.provides = {};
+      context.provides[key] = value;
+    },
+    inject(key) {
+      let parent = parentContext;
+      while (parent) {
+        if (parent.provides && key in parent.provides) {
+          return parent.provides[key];
+        }
+        parent = parent.parentContext;
+      }
+      console.warn(`[OmniJS] Context key "${key}" not found in parent ancestry.`);
+      return undefined;
+    },
     ...window.globalOmniContext
   };
   // Execute the component's <script> block, attaching signals/functions to context
@@ -37,8 +58,8 @@ export async function mount(source, container, props = {}) {
     const transformedScript = transformReactivitySyntax(ast.script.content);
     try {
       const runScript = new Function('context', `
-        const { createSignal, effect, navigate, getRouterSignal, log, props } = context;
-        ${transformedScript}
+        const { createSignal, effect, createResource, useForm, provide, inject, navigate, getRouterSignal, beforeEach, log, props } = context;
+        \${transformedScript}
       `);
       runScript(context);
     } catch(e) {
@@ -86,7 +107,7 @@ if (typeof window !== 'undefined') {
     scripts.forEach(async script => {
       let source = script.textContent;
       if (script.hasAttribute('src')) {
-        const res = await fetch(script.getAttribute('src'));
+        const res = await fetch(script.getAttribute('src'), { cache: 'no-cache' });
         source = await res.text();
       }
       const container = document.createElement('div');

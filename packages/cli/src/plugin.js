@@ -10,36 +10,58 @@ export function compileOmni(source, filePath) {
   const ast = parse(source);
   const jsLogic = transformReactivitySyntax(ast.script.content);
   
-  // A true compiler would generate:
-  // const el1 = document.createElement('div'); ...
-  // For MVP, let's generate a function that uses the runtime renderer to avoid writing a full HTML-to-JS compiler here.
-  // BUT the prompt says "Static Optimization CLI". Let's do a very basic regex to JS conversion if possible.
-  // Actually, bundling the lightweight renderer is standard for frameworks like Vue (runtime-dom) if not fully compiled.
-  // Let's stick to returning a module that mounts via the runtime for now, as writing a full HTML parser in JS for Node (without dependencies) is complex for one file.
-  
-  // We'll export a default function that mounts the component.
-  
+  const imports = ast.components.map(c => {
+    const absTarget = path.resolve(process.cwd(), c.src);
+    const dir = path.dirname(filePath);
+    let relativePath = path.relative(dir, absTarget);
+    if (!relativePath.startsWith('.') && !relativePath.startsWith('/') && !relativePath.startsWith('\\')) {
+      relativePath = './' + relativePath;
+    }
+    relativePath = relativePath.replace(/\\/g, '/');
+    const compIdentifier = `OMNI_COMP_${c.name.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+    return `import ${compIdentifier} from '${relativePath}';`;
+  }).join('\n');
+
   return `
     import { createSignal, effect } from '@omni/runtime/src/reactivity.js';
     import { render } from '@omni/runtime/src/renderer.js';
-    import gsap from 'gsap';
+    import { navigate, getRouterSignal, beforeEach } from '@omni/runtime/src/router.js';
+    import { createResource } from '@omni/runtime/src/resource.js';
+    import { useForm } from '@omni/runtime/src/form.js';
+    ${imports}
 
-    export default function mount(container) {
+    export default function mount(container, props = {}, parentContext = null) {
       if (!window.globalOmniContext) {
         window.globalOmniContext = {
-          currentPage: createSignal('home')
+          currentPage: getRouterSignal()
         };
       }
-      const context = { createSignal, effect, ...window.globalOmniContext };
+      const context = { createSignal, effect, createResource, useForm, navigate, getRouterSignal, beforeEach, props, ...window.globalOmniContext };
+      context.parentContext = parentContext;
+      context.provide = (key, value) => {
+        if (!context.provides) context.provides = {};
+        context.provides[key] = value;
+      };
+      context.inject = (key) => {
+        let parent = parentContext;
+        while (parent) {
+          if (parent.provides && key in parent.provides) {
+            return parent.provides[key];
+          }
+          parent = parent.parentContext;
+        }
+        console.warn('[OmniJS] Context key "' + key + '" not found in parent ancestry.');
+        return undefined;
+      };
       const log = (...args) => console.log('[OmniJS]', ...args);
       context.log = log;
       
-      const { navigate, getRouterSignal } = context;
+      const { navigate: _nav, getRouterSignal: _getSig, provide, inject } = context;
       
       ${jsLogic.replace(/const log = context\.log;/g, '')}
 
       // Inject CSS
-      const styleContent = \`${ast.style.content.replace(/`/g, '\\`')}\`;
+      const styleContent = ${JSON.stringify(ast.style.content)};
       // Use a hash of the content to prevent duplicate style injections for the same component
       const styleHash = 'omni-style-' + Math.abs(styleContent.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0));
       if (styleContent && !document.getElementById(styleHash)) {
@@ -50,8 +72,10 @@ export function compileOmni(source, filePath) {
       }
 
       const ast = {
-        templateSource: \`${ast.templateSource.replace(/`/g, '\\`')}\`,
-        components: ${JSON.stringify(ast.components)}
+        templateSource: ${JSON.stringify(ast.templateSource)},
+        components: [
+          ${ast.components.map(c => `{ name: '${c.name}', mount: OMNI_COMP_${c.name.replace(/[^a-zA-Z0-9_]/g, '_')} }`).join(',\n')}
+        ]
       };
 
       render(ast, context, container);

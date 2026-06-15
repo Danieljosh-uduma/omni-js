@@ -55,6 +55,11 @@
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>
           <Text type="td" class="px-4 py-3">Executes a script function when the form is submitted.</Text>
         </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
+          <Text type="td" class="px-4 py-3">Override default element type to a custom HTML element tag (e.g., `as="div"` or `as="span"`).</Text>
+        </Collection>
       </Collection>
     </Collection>
   </Stack>

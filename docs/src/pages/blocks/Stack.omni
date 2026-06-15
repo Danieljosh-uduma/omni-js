@@ -49,15 +49,16 @@
           <Text type="td" class="px-4 py-3">CSS classes to apply. Use utility classes (Tailwind) here.</Text>
         </Collection>
         <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
+          <Text type="td" class="px-4 py-3">Override the default semantic tag based on depth (e.g. `as="nav"`, `as="header"` or `as="footer"`).</Text>
+        </Collection>
+        <Collection type="tr">
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">bind-style</Text>
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">State Signal</Text>
           <Text type="td" class="px-4 py-3">Reactively bind the inline style to a state variable (e.g. `?myStyle`).</Text>
         </Collection>
-        <Collection type="tr">
-          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">animate-load</Text>
-          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">GSAP Object</Text>
-          <Text type="td" class="px-4 py-3">Declarative entrance GSAP animation (e.g. `from: { opacity: 0 }`).</Text>
-        </Collection>
+
         <Collection type="tr">
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">on-*</Text>
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Function</Text>

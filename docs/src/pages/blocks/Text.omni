@@ -42,6 +42,11 @@
           <Text type="td" class="px-4 py-3">Override the automatic depth tag (e.g. `type="span"` or `type="th"`).</Text>
         </Collection>
         <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
+          <Text type="td" class="px-4 py-3">Override the auto-inferred heading tag to a custom HTML tag (e.g. `as="span"`, `as="h1"`, or `as="p"`).</Text>
+        </Collection>
+        <Collection type="tr">
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">bind-text</Text>
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">State Signal</Text>
           <Text type="td" class="px-4 py-3">Reactively bind the element's textContent to a state variable.</Text>

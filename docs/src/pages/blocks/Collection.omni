@@ -44,7 +44,7 @@
         <Collection type="tr">
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">as</Text>
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">String</Text>
-          <Text type="td" class="px-4 py-3">The alias for the scoped item variable (e.g. `item` becomes `{item.prop}`).</Text>
+          <Text type="td" class="px-4 py-3">If iterating, the alias for the scoped item variable (e.g. `item`). If not iterating, overrides the HTML tag type.</Text>
         </Collection>
         <Collection type="tr">
           <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">type</Text>

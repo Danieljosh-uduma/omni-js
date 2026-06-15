@@ -1,0 +1,73 @@
+<Stack class="max-w-[780px] animate-in slide-in-from-bottom-4 duration-500">
+  <Stack class="mb-12">
+    <Text class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-accent-pink)] mb-2">API Reference</Text>
+    <Text class="font-heading text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3 transition-colors duration-300">Asynchronous Resources (createResource)</Text>
+    <Text class="text-lg text-zinc-600 dark:text-zinc-400 max-w-[620px] leading-relaxed transition-colors duration-300">Manage remote data fetching declaratively. The `createResource` primitive handles state synchronization, loading flags, errors, and reactive dependency refetching automatically.</Text>
+  </Stack>
+
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Usage & Signature</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    `createResource` takes an asynchronous fetcher function and an optional dependency tracking source. It returns a read-only object wrapping reactive signals.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// Signature: const resource = createResource(fetcher, source?);</Text>
+    <Text class="text-[var(--color-accent-blue)]">const userResource = createResource(async (id) => {</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  const res = await fetch(`/api/user/${id}`);</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  return res.json();</Text>
+    <Text class="text-[var(--color-accent-blue)]">}, () => ?userId);</Text>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-8 mb-3">Resource Properties</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    The returned object exposes three read-only properties which can be bound directly to the template:
+  </Text>
+  
+  <Stack class="w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0e12] my-4">
+    <Collection type="table" class="w-full text-left text-sm">
+      <Collection type="thead" class="bg-zinc-50 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-zinc-900 dark:text-white">
+        <Collection type="tr">
+          <Text type="th" class="px-4 py-3 font-semibold">Property</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Type</Text>
+          <Text type="th" class="px-4 py-3 font-semibold">Description</Text>
+        </Collection>
+      </Collection>
+      <Collection type="tbody" class="divide-y divide-black/5 dark:divide-white/5 text-zinc-600 dark:text-zinc-400">
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">value</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Any</Text>
+          <Text type="td" class="px-4 py-3">The resolved data returned by the fetcher (or `undefined` initially).</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">loading</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Boolean</Text>
+          <Text type="td" class="px-4 py-3">Reactive boolean indicating if the fetch operation is currently in progress.</Text>
+        </Collection>
+        <Collection type="tr">
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem] text-[var(--color-accent-pink)]">error</Text>
+          <Text type="td" class="px-4 py-3 font-mono text-[0.8rem]">Error | null</Text>
+          <Text type="td" class="px-4 py-3">Contains any Error object thrown during fetching, or `null` if successful.</Text>
+        </Collection>
+      </Collection>
+    </Collection>
+  </Stack>
+
+  <Text class="font-heading text-xl font-bold text-zinc-900 dark:text-white mt-10 mb-3">Binding to Templates</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    You can bind the resource states in templates using the standard `bind-` properties or inline template syntax. Nested signal unwrapping handles properties automatically.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-[0.75rem] leading-[1.75] my-4 overflow-x-auto">
+    <Text class="text-[var(--color-accent-pink)]">&lt;Stack bind-show="userResource.loading"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Loading user details...&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-pink)]">&lt;/Stack&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;Stack bind-show="userResource.value"&gt;</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  &lt;Text&gt;Welcome back, {userResource.value.name}!&lt;/Text&gt;</Text>
+    <Text class="text-[var(--color-accent-blue)]">&lt;/Stack&gt;</Text>
+  </Stack>
+
+  <Stack class="flex justify-between items-center mt-16 pt-6 border-t border-black/5 dark:border-white/10">
+    <Action class="px-6 py-3 text-zinc-600 dark:text-zinc-400 font-medium hover:text-black dark:hover:text-white transition-colors" navigate-to="/api/reactivity">&larr; Reactivity & Signals</Action>
+    <Action class="px-6 py-3 bg-[var(--color-accent-blue)] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity" navigate-to="/api/context">Next: Context API &rarr;</Action>
+  </Stack>
+</Stack>
