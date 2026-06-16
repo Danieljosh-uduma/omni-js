@@ -29,9 +29,13 @@
     }
   </style>
 
-  <script src="/omni-runtime.js" type="module"></script>
+  
 </head>
 <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-body transition-colors duration-300">
-  <script type="text/omni" src="./src/App.omni"></script>
+  <div id="omni-root"></div>
+  <script type="module">
+    import mount from '/App.js';
+    mount(document.getElementById('omni-root'));
+  </script>
 </body>
 </html>
