@@ -2,6 +2,7 @@
   "name": "omni-js-monorepo",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*",
     "demo",
@@ -12,6 +13,14 @@
     "build:cli": "npm run build --workspace=@omni/cli",
     "build:runtime": "npm run build --workspace=@omni/runtime",
     "build": "npm run build:runtime",
-    "publish-all": "npm publish --workspace=packages/runtime --access public && npm publish --workspace=packages/cli --access public"
+    "publish-all": "npm publish --workspace=packages/runtime --access public && npm publish --workspace=packages/cli --access public",
+    "lint": "eslint \"packages/*/src/**/*.js\" \"packages/*/bin/**/*.js\"",
+    "format": "prettier --write \"packages/*/src/**/*.js\" \"packages/*/bin/**/*.js\" \"**/*.md\"",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "husky": "^9.0.0",
+    "prettier": "^3.0.0"
   }
 }

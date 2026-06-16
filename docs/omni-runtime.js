@@ -5681,6 +5681,56 @@ function parse3(input, options) {
   return Parser.parse(input, options);
 }
 
+// src/error.js
+var OmniError = class _OmniError extends Error {
+  constructor(message, context = {}) {
+    super(message);
+    this.name = "OmniError";
+    this.context = context;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, _OmniError);
+    }
+  }
+};
+function handleOmniError(message, error) {
+  console.error(
+    `%c \u{1F6A8} OmniJS Error `,
+    "background: #ff2d7b; color: white; border-radius: 4px; padding: 2px 6px; font-weight: bold;",
+    message
+  );
+  console.error(error);
+  if (typeof window === "undefined")
+    return;
+  let contextHtml = "";
+  if (error instanceof OmniError && error.context && Object.keys(error.context).length > 0) {
+    contextHtml = `
+      <div style="margin-top: 1rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+        <strong style="color: #ff9f43; font-size: 0.9rem; display: block; margin-bottom: 0.25rem;">Error Context:</strong>
+        <pre style="margin: 0; color: #e2e8f0; font-size: 0.8rem; font-family: inherit;">${JSON.stringify(error.context, null, 2)}</pre>
+      </div>
+    `;
+  }
+  const overlay = document.createElement("div");
+  overlay.className = "omni-error-overlay";
+  overlay.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 15, 15, 0.95); color: #ff8e8e; z-index: 999999;
+    padding: 3rem; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; 
+    overflow-y: auto; box-sizing: border-box; backdrop-filter: blur(10px);
+  `;
+  const stack = error && error.stack ? error.stack : error || "Unknown Error";
+  overlay.innerHTML = `
+    <div style="max-width: 800px; margin: 0 auto;">
+      <h1 style="color: #ff2d7b; margin-top: 0; font-size: 1.5rem; letter-spacing: -0.02em; margin-bottom: 0.5rem;">\u{1F6A8} OmniJS Error</h1>
+      <h3 style="color: white; font-weight: 500; font-size: 1.1rem; margin-bottom: 1.5rem;">${message}</h3>
+      ${contextHtml}
+      <pre style="background: rgba(255, 45, 123, 0.1); color: #ffb3c6; padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 45, 123, 0.2); white-space: pre-wrap; font-size: 0.85rem; line-height: 1.6; overflow-x: auto;">${stack}</pre>
+      <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 2rem; padding: 0.75rem 1.5rem; background: white; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s;">Dismiss Overlay</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
 // src/parser.js
 function parse4(source) {
   const ast = {
@@ -5691,13 +5741,17 @@ function parse4(source) {
     template: []
     // The structural blocks
   };
-  const scriptMatch = source.match(/<script(?:[^>]*)src-logic=["'](.*?)["'](?:[^>]*)>([\s\S]*?)<\/script>|<script>([\s\S]*?)<\/script>/);
+  const scriptMatch = source.match(
+    /<script(?:[^>]*)src-logic=["'](.*?)["'](?:[^>]*)>([\s\S]*?)<\/script>|<script>([\s\S]*?)<\/script>/
+  );
   if (scriptMatch) {
     ast.script.src = scriptMatch[1] || null;
     ast.script.content = scriptMatch[2] || scriptMatch[3] || "";
     source = source.replace(scriptMatch[0], "");
   }
-  const styleMatch = source.match(/<style(?:[^>]*)src-style=["'](.*?)["'](?:[^>]*)>([\s\S]*?)<\/style>|<style>([\s\S]*?)<\/style>/);
+  const styleMatch = source.match(
+    /<style(?:[^>]*)src-style=["'](.*?)["'](?:[^>]*)>([\s\S]*?)<\/style>|<style>([\s\S]*?)<\/style>/
+  );
   if (styleMatch) {
     ast.style.src = styleMatch[1] || null;
     ast.style.content = styleMatch[2] || styleMatch[3] || "";
@@ -5723,8 +5777,14 @@ function transformReactivitySyntax(scriptContent) {
   try {
     ast = parse3(masked, { ecmaVersion: 2022, sourceType: "module" });
   } catch (e) {
-    console.error("[OmniJS Parser] Failed to parse script AST:", e);
-    return scriptContent;
+    const snippet = masked && e.pos !== void 0 ? "..." + masked.substring(Math.max(0, e.pos - 40), e.pos) + " \u{1F6A8} " + masked.substring(e.pos, Math.min(masked.length, e.pos + 40)) + "..." : "";
+    throw new OmniError(`Failed to parse component script block: ${e.message}`, {
+      message: e.message,
+      line: e.loc ? e.loc.line : void 0,
+      column: e.loc ? e.loc.column : void 0,
+      pos: e.pos,
+      snippet
+    });
   }
   const replacements = [];
   const functionsToAttach = [];
@@ -5764,13 +5824,13 @@ function transformReactivitySyntax(scriptContent) {
             replacements.push({
               start: decl.init.end,
               end: node.end,
-              text: `)`
+              text: `, "${varName}")`
             });
           } else {
             replacements.push({
               start: node.start,
               end: node.end,
-              text: `context.${varName} = context.createSignal()`
+              text: `context.${varName} = context.createSignal(undefined, "${varName}")`
             });
           }
         } else if (decl.id.name && isTopLevel) {
@@ -5808,8 +5868,131 @@ context.${fn} = ${fn};`;
 
 // src/reactivity.js
 var currentSubscriber = null;
-function createSignal(initialValue) {
+var globalSignalId = 0;
+var globalOmniStateTarget = {};
+var globalStateSubscribers = /* @__PURE__ */ new Map();
+function makeGlobalReactive(obj, propName) {
+  if (obj && typeof obj === "object") {
+    return new Proxy(obj, {
+      get(target, prop, receiver) {
+        if (currentSubscriber) {
+          if (!globalStateSubscribers.has(propName)) {
+            globalStateSubscribers.set(propName, /* @__PURE__ */ new Set());
+          }
+          globalStateSubscribers.get(propName).add(currentSubscriber);
+        }
+        const val = Reflect.get(target, prop, receiver);
+        if (val && typeof val === "object") {
+          return makeGlobalReactive(val, propName);
+        }
+        return val;
+      },
+      set(target, prop, value, receiver) {
+        const oldVal = Reflect.get(target, prop, receiver);
+        if (oldVal !== value) {
+          Reflect.set(target, prop, value, receiver);
+          if (globalStateSubscribers.has(propName)) {
+            globalStateSubscribers.get(propName).forEach((sub) => sub());
+          }
+          if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+            window.__OMNI_DEVTOOLS__.logMutation(0, `state.${propName}.${String(prop)}`, oldVal, value);
+          }
+        }
+        return true;
+      }
+    });
+  }
+  return obj;
+}
+var globalOmniStateProxy = new Proxy(globalOmniStateTarget, {
+  get(target, prop, receiver) {
+    if (currentSubscriber) {
+      if (!globalStateSubscribers.has(prop)) {
+        globalStateSubscribers.set(prop, /* @__PURE__ */ new Set());
+      }
+      globalStateSubscribers.get(prop).add(currentSubscriber);
+    }
+    const val = Reflect.get(target, prop, receiver);
+    if (val && typeof val === "object") {
+      return makeGlobalReactive(val, String(prop));
+    }
+    return val;
+  },
+  set(target, prop, value, receiver) {
+    const oldVal = Reflect.get(target, prop, receiver);
+    if (oldVal !== value) {
+      Reflect.set(target, prop, value, receiver);
+      if (globalStateSubscribers.has(prop)) {
+        globalStateSubscribers.get(prop).forEach((sub) => sub());
+      }
+      if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+        window.__OMNI_DEVTOOLS__.logMutation(0, `state.${String(prop)}`, oldVal, value);
+      }
+    }
+    return true;
+  }
+});
+if (typeof window !== "undefined") {
+  window.globalOmniState = globalOmniStateProxy;
+} else {
+  globalThis.globalOmniState = globalOmniStateProxy;
+}
+var DevToolsExplorer = {
+  signals: /* @__PURE__ */ new Map(),
+  // Map of signalId -> { name, value }
+  listeners: /* @__PURE__ */ new Set(),
+  history: [],
+  // Array of mutations
+  registerSignal(id, name, value) {
+    this.signals.set(id, { name, value });
+    this.broadcast("register", { id, name, value });
+  },
+  logMutation(id, name, oldValue, newValue) {
+    if (this.signals.has(id)) {
+      this.signals.get(id).value = newValue;
+    }
+    const payload = { id, name, oldValue, newValue, timestamp: Date.now() };
+    this.history.push(payload);
+    this.broadcast("mutation", payload);
+  },
+  onEvent(handler) {
+    this.listeners.add(handler);
+    return () => this.listeners.delete(handler);
+  },
+  broadcast(type, payload) {
+    this.listeners.forEach((cb) => cb({ type, payload }));
+  }
+};
+if (typeof window !== "undefined") {
+  window.__OMNI_DEVTOOLS__ = DevToolsExplorer;
+}
+function createSignal(initialValue, debugName = "") {
+  const signalId = ++globalSignalId;
   const subscribers = /* @__PURE__ */ new Set();
+  const resolvedName = debugName || `signal_${signalId}`;
+  if (debugName) {
+    const globalState = typeof window !== "undefined" ? window.globalOmniState : globalThis.globalOmniState;
+    if (globalState) {
+      if (!(debugName in globalState)) {
+        globalState[debugName] = initialValue;
+      }
+      if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+        window.__OMNI_DEVTOOLS__.registerSignal(signalId, resolvedName, initialValue);
+      }
+      return {
+        __isSignal: true,
+        get value() {
+          return globalState[debugName];
+        },
+        set value(newValue) {
+          globalState[debugName] = newValue;
+        }
+      };
+    }
+  }
+  if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+    window.__OMNI_DEVTOOLS__.registerSignal(signalId, resolvedName, initialValue);
+  }
   function makeReactive(obj) {
     if (obj && typeof obj === "object") {
       return new Proxy(obj, {
@@ -5827,6 +6010,9 @@ function createSignal(initialValue) {
           const oldVal = Reflect.get(target, prop, receiver);
           if (oldVal !== value) {
             Reflect.set(target, prop, value, receiver);
+            if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+              window.__OMNI_DEVTOOLS__.logMutation(signalId, resolvedName, oldVal, value);
+            }
             subscribers.forEach((sub) => sub());
           }
           return true;
@@ -5846,7 +6032,11 @@ function createSignal(initialValue) {
     },
     set value(newValue) {
       if (rawValue !== newValue) {
+        const oldValue = rawValue;
         rawValue = makeReactive(newValue);
+        if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+          window.__OMNI_DEVTOOLS__.logMutation(signalId, resolvedName, oldValue, newValue);
+        }
         subscribers.forEach((sub) => sub());
       }
     }
@@ -5857,34 +6047,150 @@ function effect(fn) {
     currentSubscriber = execute;
     try {
       fn();
+    } catch (e) {
+      handleOmniError("Error occurred in reactivity effect.", e);
     } finally {
       currentSubscriber = null;
     }
   };
   execute();
 }
+function createStore(initialState = {}, storeName = "store") {
+  if (storeName && typeof window !== "undefined" && window.globalOmniStores && window.globalOmniStores[storeName]) {
+    return window.globalOmniStores[storeName];
+  }
+  const subscribers = /* @__PURE__ */ new Set();
+  const storeId = ++globalSignalId;
+  if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+    window.__OMNI_DEVTOOLS__.registerSignal(storeId, storeName, initialState);
+  }
+  function makeStoreReactive(obj, path = "") {
+    if (obj && typeof obj === "object") {
+      return new Proxy(obj, {
+        get(target, prop, receiver) {
+          if (currentSubscriber) {
+            subscribers.add(currentSubscriber);
+          }
+          const val = Reflect.get(target, prop, receiver);
+          if (val && typeof val === "object") {
+            return makeStoreReactive(val, path ? `${path}.${String(prop)}` : String(prop));
+          }
+          return val;
+        },
+        set(target, prop, value, receiver) {
+          const oldVal = Reflect.get(target, prop, receiver);
+          if (oldVal !== value) {
+            const newVal = makeStoreReactive(value, path ? `${path}.${String(prop)}` : String(prop));
+            Reflect.set(target, prop, newVal, receiver);
+            if (typeof window !== "undefined" && window.__OMNI_DEVTOOLS__) {
+              const fullPath = path ? `${storeName}.${path}.${String(prop)}` : `${storeName}.${String(prop)}`;
+              window.__OMNI_DEVTOOLS__.logMutation(storeId, fullPath, oldVal, value);
+            }
+            subscribers.forEach((sub) => sub());
+          }
+          return true;
+        }
+      });
+    }
+    return obj;
+  }
+  const store = makeStoreReactive(initialState);
+  if (storeName && typeof window !== "undefined") {
+    window.globalOmniStores = window.globalOmniStores || {};
+    window.globalOmniStores[storeName] = store;
+  }
+  return store;
+}
 
 // src/router.js
 var routerInitialized = false;
 var currentPath = null;
+var guards = [];
+function beforeEach(guard) {
+  guards.push(guard);
+}
+async function runGuards(to, from) {
+  let index = 0;
+  return new Promise((resolve) => {
+    function next(action) {
+      if (action === false) {
+        resolve({ status: "cancel" });
+      } else if (typeof action === "string") {
+        resolve({ status: "redirect", path: action });
+      } else if (action === true || action === void 0) {
+        index++;
+        if (index < guards.length) {
+          try {
+            guards[index](to, from, next);
+          } catch (err) {
+            handleOmniError(
+              "Error occurred in router navigation guard.",
+              new OmniError(err.message || String(err), { to, from, guardIndex: index })
+            );
+            resolve({ status: "cancel" });
+          }
+        } else {
+          resolve({ status: "ok" });
+        }
+      }
+    }
+    if (guards.length === 0) {
+      resolve({ status: "ok" });
+    } else {
+      try {
+        guards[0](to, from, next);
+      } catch (err) {
+        handleOmniError(
+          "Error occurred in router navigation guard.",
+          new OmniError(err.message || String(err), { to, from, guardIndex: 0 })
+        );
+        resolve({ status: "cancel" });
+      }
+    }
+  });
+}
+var getPath = () => window.location.pathname || "/";
 function initRouter() {
   if (routerInitialized)
     return currentPath;
-  const getPath = () => window.location.pathname || "/";
   currentPath = createSignal(getPath());
-  window.addEventListener("popstate", () => {
-    currentPath.value = getPath();
-    window.scrollTo({ top: 0, behavior: "instant" });
+  window.addEventListener("popstate", async () => {
+    const from = currentPath.value;
+    const to = getPath();
+    if (to === from)
+      return;
+    const result = await runGuards(to, from);
+    if (result.status === "ok") {
+      currentPath.value = to;
+      window.scrollTo({ top: 0, behavior: "instant" });
+    } else if (result.status === "redirect") {
+      window.history.pushState(null, "", result.path);
+      currentPath.value = result.path;
+      window.scrollTo({ top: 0, behavior: "instant" });
+    } else {
+      window.history.pushState(null, "", from);
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
   });
   routerInitialized = true;
   return currentPath;
 }
-function navigate(path) {
+async function navigate(path) {
   if (!currentPath)
     initRouter();
-  window.history.pushState(null, "", path);
-  currentPath.value = path;
-  window.scrollTo({ top: 0, behavior: "instant" });
+  const from = currentPath.value;
+  const to = path;
+  if (to === from)
+    return;
+  const result = await runGuards(to, from);
+  if (result.status === "ok") {
+    window.history.pushState(null, "", to);
+    currentPath.value = to;
+    window.scrollTo({ top: 0, behavior: "instant" });
+  } else if (result.status === "redirect") {
+    navigate(result.path);
+  } else {
+  }
 }
 function getRouterSignal() {
   if (!currentPath)
@@ -5915,6 +6221,13 @@ async function render(ast, context, container) {
   const preprocessed = preprocessTemplate(ast.templateSource, ast.components || []);
   const parser = new DOMParser();
   const doc = parser.parseFromString(preprocessed, "text/html");
+  const parserError = doc.querySelector("parsererror");
+  if (parserError) {
+    throw new OmniError(`HTML parsing error: ${parserError.textContent.trim()}`, {
+      phase: "Template parsing",
+      templateSource: ast.templateSource
+    });
+  }
   const rootNodes = Array.from(doc.body.childNodes);
   for (const node of rootNodes) {
     const el = await walkAndTransform(node, context, { stackDepth: 0, textDepth: 1 }, ast.components || []);
@@ -5958,10 +6271,52 @@ async function walkAndTransform(node, context, state, components) {
   if (node.nodeType !== Node.ELEMENT_NODE)
     return null;
   const tagName = node.tagName.toLowerCase();
+  if (tagName === "portal") {
+    const target = node.getAttribute("target") || "body";
+    const targetEl = document.querySelector(target) || document.body;
+    const placeholder = document.createElement("span");
+    placeholder.style.display = "none";
+    placeholder.className = "omni-portal-placeholder";
+    const portalContent = document.createElement("div");
+    portalContent.className = "omni-portal-content";
+    Array.from(node.attributes).forEach((attr) => {
+      if (attr.name !== "target" && attr.name !== "as") {
+        portalContent.setAttribute(attr.name, attr.value);
+      }
+    });
+    for (const child of Array.from(node.childNodes)) {
+      const childEl = await walkAndTransform(child, context, state, components);
+      if (childEl)
+        portalContent.appendChild(childEl);
+    }
+    targetEl.appendChild(portalContent);
+    const syncVisibility = () => {
+      const isVisible = placeholder.isConnected && (placeholder.offsetParent !== null || placeholder.getBoundingClientRect().width > 0);
+      portalContent.style.display = isVisible ? "" : "none";
+    };
+    const observer = new MutationObserver(syncVisibility);
+    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ["style", "class"] });
+    setTimeout(syncVisibility, 0);
+    const disconnectObserver = new MutationObserver(() => {
+      if (!placeholder.isConnected) {
+        portalContent.remove();
+        observer.disconnect();
+        disconnectObserver.disconnect();
+      }
+    });
+    disconnectObserver.observe(document.body, { childList: true, subtree: true });
+    return placeholder;
+  }
   let customComp = null;
   if (tagName.startsWith("omni-component-")) {
     const originalName = node.getAttribute("omni-name");
     customComp = components.find((c) => c.name === originalName);
+    if (!customComp) {
+      throw new OmniError(
+        `Component <${originalName}> is used in template but not registered. Make sure to import it using <Use component="..." name="${originalName}">.`,
+        { componentName: originalName, availableComponents: components.map((c) => c.name) }
+      );
+    }
   }
   if (customComp) {
     const wrapper = document.createElement("div");
@@ -6184,6 +6539,15 @@ async function walkAndTransform(node, context, state, components) {
             }
           });
         }
+      } else {
+        throw new OmniError(
+          `Cannot bind property "${prop}" to "${value}": "${rootSignalName}" is not defined in the component context.`,
+          {
+            bindingProperty: prop,
+            expression: value,
+            rootVariable: rootSignalName
+          }
+        );
       }
       return;
     }
@@ -6191,6 +6555,14 @@ async function walkAndTransform(node, context, state, components) {
       const eventName = name.replace("on-", "");
       if (context[value]) {
         el.addEventListener(eventName, context[value]);
+      } else {
+        throw new OmniError(
+          `Cannot attach event listener "on::${eventName}": handler "${value}" is not defined in the component context.`,
+          {
+            eventName,
+            handlerName: value
+          }
+        );
       }
       return;
     }
@@ -6216,6 +6588,14 @@ async function walkAndTransform(node, context, state, components) {
           }
         });
       });
+    } else {
+      throw new OmniError(
+        `Cannot render collection: data source signal "${signalName}" is not defined in the component context.`,
+        {
+          signalName,
+          asName
+        }
+      );
     }
   } else {
     for (const child of Array.from(node.childNodes)) {
@@ -6238,19 +6618,19 @@ async function walkAndTransform(node, context, state, components) {
 
 // src/resource.js
 function createResource(fetcher, source) {
-  const [value, setValue] = createSignal(void 0);
-  const [loading, setLoading] = createSignal(false);
-  const [error, setError] = createSignal(null);
+  const value = createSignal(void 0);
+  const loading = createSignal(false);
+  const error = createSignal(null);
   async function execute(sourceVal) {
-    setLoading(true);
-    setError(null);
+    loading.value = true;
+    error.value = null;
     try {
       const data2 = await fetcher(sourceVal);
-      setValue(data2);
+      value.value = data2;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
+      error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
-      setLoading(false);
+      loading.value = false;
     }
   }
   if (source) {
@@ -6325,31 +6705,6 @@ function useForm({ initialValues = {}, validate = () => ({}) }) {
   };
 }
 
-// src/error.js
-function handleOmniError(message, error) {
-  console.error(`%c \u{1F6A8} OmniJS Error `, "background: #ff2d7b; color: white; border-radius: 4px; padding: 2px 6px; font-weight: bold;", message);
-  console.error(error);
-  if (typeof window === "undefined")
-    return;
-  const overlay = document.createElement("div");
-  overlay.style.cssText = `
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(15, 15, 15, 0.95); color: #ff8e8e; z-index: 999999;
-    padding: 3rem; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; 
-    overflow-y: auto; box-sizing: border-box; backdrop-filter: blur(10px);
-  `;
-  const stack = error && error.stack ? error.stack : error || "Unknown Error";
-  overlay.innerHTML = `
-    <div style="max-w-[800px] margin: 0 auto;">
-      <h1 style="color: #ff2d7b; margin-top: 0; font-size: 1.5rem; letter-spacing: -0.02em; margin-bottom: 0.5rem;">\u{1F6A8} OmniJS Error</h1>
-      <h3 style="color: white; font-weight: 500; font-size: 1.1rem; margin-bottom: 1.5rem;">${message}</h3>
-      <pre style="background: rgba(255, 45, 123, 0.1); color: #ffb3c6; padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 45, 123, 0.2); white-space: pre-wrap; font-size: 0.85rem; line-height: 1.6; overflow-x: auto;">${stack}</pre>
-      <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 2rem; padding: 0.75rem 1.5rem; background: white; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s;">Dismiss Overlay</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
-
 // src/index.js
 async function mount(source, container, props = {}, parentContext = null) {
   let ast;
@@ -6365,20 +6720,22 @@ async function mount(source, container, props = {}, parentContext = null) {
       currentPage: getRouterSignal()
     };
   }
-  const context = {
+  const baseContext = {
     createSignal,
     effect,
     createResource,
+    createStore,
     useForm,
     navigate,
     getRouterSignal,
+    beforeEach,
     log: (...args) => console.log("[OmniJS]", ...args),
     props,
     parentContext,
     provide(key, value) {
-      if (!context.provides)
-        context.provides = {};
-      context.provides[key] = value;
+      if (!baseContext.provides)
+        baseContext.provides = {};
+      baseContext.provides[key] = value;
     },
     inject(key) {
       let parent = parentContext;
@@ -6393,16 +6750,52 @@ async function mount(source, container, props = {}, parentContext = null) {
     },
     ...window.globalOmniContext
   };
+  const context = new Proxy(baseContext, {
+    get(target, prop, receiver) {
+      if (prop in target) {
+        return Reflect.get(target, prop, receiver);
+      }
+      if (typeof window !== "undefined" && window.globalOmniState && prop in window.globalOmniState) {
+        return {
+          __isSignal: true,
+          get value() {
+            return window.globalOmniState[prop];
+          },
+          set value(newValue) {
+            window.globalOmniState[prop] = newValue;
+          }
+        };
+      }
+      if (typeof window !== "undefined" && window.globalOmniStores && prop in window.globalOmniStores) {
+        return window.globalOmniStores[prop];
+      }
+      return void 0;
+    },
+    set(target, prop, value, receiver) {
+      return Reflect.set(target, prop, value, receiver);
+    },
+    has(target, prop) {
+      return prop in target || typeof window !== "undefined" && window.globalOmniState && prop in window.globalOmniState || typeof window !== "undefined" && window.globalOmniStores && prop in window.globalOmniStores;
+    }
+  });
   if (ast.script.content) {
     const transformedScript = transformReactivitySyntax(ast.script.content);
     try {
-      const runScript = new Function("context", `
-        const { createSignal, effect, createResource, useForm, provide, inject, navigate, getRouterSignal, log, props } = context;
-        \${transformedScript}
-      `);
+      const runScript = new Function(
+        "context",
+        `
+        const { createSignal, effect, createResource, createStore, useForm, provide, inject, navigate, getRouterSignal, beforeEach, log, props } = context;
+        ${transformedScript}
+      `
+      );
       runScript(context);
     } catch (e) {
-      handleOmniError("Script execution failed during compilation/mount.", e);
+      const wrappedError = new OmniError(e.message || String(e), {
+        componentName: parentContext ? "Child Component" : "Root Component",
+        phase: "Script execution / Mount"
+      });
+      wrappedError.stack = e.stack || wrappedError.stack;
+      handleOmniError("Script execution failed during compilation/mount.", wrappedError);
     }
   }
   if (ast.style.content) {
@@ -6448,5 +6841,8 @@ if (typeof window !== "undefined") {
   });
 }
 export {
+  OmniError,
+  createStore,
+  handleOmniError,
   mount
 };

@@ -1,6 +1,6 @@
 // OmniJS Router - Fully abstracted, History API based routing engine
-
 import { createSignal } from './reactivity.js';
+import { handleOmniError, OmniError } from './error.js';
 
 let routerInitialized = false;
 let currentPath = null;
@@ -25,7 +25,10 @@ async function runGuards(to, from) {
           try {
             guards[index](to, from, next);
           } catch (err) {
-            console.error('[OmniJS Router] Guard error:', err);
+            handleOmniError(
+              'Error occurred in router navigation guard.',
+              new OmniError(err.message || String(err), { to, from, guardIndex: index })
+            );
             resolve({ status: 'cancel' });
           }
         } else {
@@ -40,7 +43,10 @@ async function runGuards(to, from) {
       try {
         guards[0](to, from, next);
       } catch (err) {
-        console.error('[OmniJS Router] Guard error:', err);
+        handleOmniError(
+          'Error occurred in router navigation guard.',
+          new OmniError(err.message || String(err), { to, from, guardIndex: 0 })
+        );
         resolve({ status: 'cancel' });
       }
     }
@@ -51,7 +57,7 @@ const getPath = () => window.location.pathname || '/';
 
 export function initRouter() {
   if (routerInitialized) return currentPath;
-  
+
   // Create a reactive signal bound to the current URL pathname
   currentPath = createSignal(getPath());
 
@@ -84,7 +90,7 @@ export function initRouter() {
 
 export async function navigate(path) {
   if (!currentPath) initRouter();
-  
+
   const from = currentPath.value;
   const to = path;
 
@@ -107,4 +113,3 @@ export function getRouterSignal() {
   if (!currentPath) initRouter();
   return currentPath;
 }
-

@@ -36,19 +36,20 @@ OmniJS is an enterprise-ready frontend framework that replaces traditional HTML 
 
 ### Why OmniJS?
 
-| Traditional HTML | OmniJS |
-|---|---|
+| Traditional HTML               | OmniJS                                            |
+| ------------------------------ | ------------------------------------------------- |
 | 100+ HTML elements to memorize | 4 blocks: `Stack`, `Text`, `Action`, `Collection` |
-| Manual `<div>` soup | Automatic semantic HTML output |
-| Separate router library needed | Routing is a native attribute |
-| GSAP lifecycle management | Declarative `animate::` attributes |
-| Manual ARIA roles | Automatic accessibility injection |
+| Manual `<div>` soup            | Automatic semantic HTML output                    |
+| Separate router library needed | Routing is a native attribute                     |
+| GSAP lifecycle management      | Declarative `animate::` attributes                |
+| Manual ARIA roles              | Automatic accessibility injection                 |
 
 ---
 
 ## 2. Installation & Project Setup
 
 ### Prerequisites
+
 - Node.js 18+ and npm 9+
 
 ### Create a New Project
@@ -66,6 +67,7 @@ npm install @omni/runtime @omni/cli
 ```
 
 If you want animations:
+
 ```bash
 npm install gsap
 ```
@@ -87,15 +89,15 @@ Create an `index.html`:
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My OmniJS App</title>
-  <script src="./omni-runtime.js" type="module"></script>
-</head>
-<body>
-  <script type="text/omni" src="./src/App.omni"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My OmniJS App</title>
+    <script src="./omni-runtime.js" type="module"></script>
+  </head>
+  <body>
+    <script type="text/omni" src="./src/App.omni"></script>
+  </body>
 </html>
 ```
 
@@ -125,6 +127,7 @@ Create `src/App.omni`:
 Start a local server (e.g., `npx serve .`) and open your browser. You'll see your app rendered with proper semantic HTML — no build step needed.
 
 **What happened under the hood:**
+
 1. The runtime intercepted `<script type="text/omni" src="./src/App.omni">`.
 2. It fetched `App.omni` via HTTP.
 3. It parsed the `<style>` block and injected it into the document `<head>`.
@@ -154,13 +157,14 @@ Every `.omni` file is a **Single-File Component (SFC)** containing up to three s
 
 ### Section Rules
 
-| Section | Required? | Purpose |
-|---|---|---|
-| `<script>` | No | Component logic, state declarations, functions |
-| `<style>` | No | CSS styles (injected into `<head>` at mount time) |
-| Template | Yes | The structural blocks that define your UI |
+| Section    | Required? | Purpose                                           |
+| ---------- | --------- | ------------------------------------------------- |
+| `<script>` | No        | Component logic, state declarations, functions    |
+| `<style>`  | No        | CSS styles (injected into `<head>` at mount time) |
+| Template   | Yes       | The structural blocks that define your UI         |
 
 ### Section Order
+
 Sections can appear in **any order**. The parser extracts `<script>` and `<style>` first, then treats everything remaining as the template.
 
 ---
@@ -174,13 +178,14 @@ The `Stack` is the universal container element. It replaces `<div>`, `<section>`
 **How it compiles:**
 The compiler uses **tree depth** to determine the semantic HTML tag:
 
-| Stack Depth | Output Element | Typical Use |
-|---|---|---|
-| 1 (root) | `<main>` | Page wrapper |
-| 2 | `<section>` | Content section |
-| 3+ | `<div>` | Generic container |
+| Stack Depth | Output Element | Typical Use       |
+| ----------- | -------------- | ----------------- |
+| 1 (root)    | `<main>`       | Page wrapper      |
+| 2           | `<section>`    | Content section   |
+| 3+          | `<div>`        | Generic container |
 
 **Example:**
+
 ```html
 <!-- Depth 1 → <main> -->
 <Stack>
@@ -195,6 +200,7 @@ The compiler uses **tree depth** to determine the semantic HTML tag:
 ```
 
 **Output HTML:**
+
 ```html
 <main>
   <section>
@@ -206,6 +212,7 @@ The compiler uses **tree depth** to determine the semantic HTML tag:
 ```
 
 **Attributes:**
+
 ```html
 <Stack class="my-class" style="padding: 2rem;" id="hero">
   <!-- Standard HTML attributes pass through directly -->
@@ -221,33 +228,37 @@ The `Text` block handles all text rendering. It replaces `<h1>`–`<h6>`, `<p>`,
 **How it compiles:**
 The compiler uses **heading hierarchy depth** to determine the tag:
 
-| Text Depth | Output Element | Typical Use |
-|---|---|---|
-| 1 | `<h1>` | Page title |
-| 2 | `<h2>` | Section heading |
-| 3 | `<h3>` | Subsection heading |
-| 4 | `<h4>` | Sub-subsection heading |
-| 5 | `<h5>` | Minor heading |
-| 6 | `<h6>` | Smallest heading |
-| 7+ | `<p>` | Body paragraph |
+| Text Depth | Output Element | Typical Use            |
+| ---------- | -------------- | ---------------------- |
+| 1          | `<h1>`         | Page title             |
+| 2          | `<h2>`         | Section heading        |
+| 3          | `<h3>`         | Subsection heading     |
+| 4          | `<h4>`         | Sub-subsection heading |
+| 5          | `<h5>`         | Minor heading          |
+| 6          | `<h6>`         | Smallest heading       |
+| 7+         | `<p>`          | Body paragraph         |
 
 **Important:** The heading depth counter increments as the renderer walks your template from top to bottom. Each `<Text>` at the same nesting level gets the next heading level.
 
 **Example:**
+
 ```html
 <Stack>
-  <Text>Page Title</Text>         <!-- h1 -->
-  <Text>Section Heading</Text>    <!-- h2 -->
-  <Text>Subsection</Text>         <!-- h3 -->
-  <Text>Paragraph text here</Text><!-- h4 -->
+  <Text>Page Title</Text>
+  <!-- h1 -->
+  <Text>Section Heading</Text>
+  <!-- h2 -->
+  <Text>Subsection</Text>
+  <!-- h3 -->
+  <Text>Paragraph text here</Text
+  ><!-- h4 -->
 </Stack>
 ```
 
 **Styling text:**
+
 ```html
-<Text class="hero-title" style="font-size: 4rem; color: #ff007f;">
-  Big Bold Title
-</Text>
+<Text class="hero-title" style="font-size: 4rem; color: #ff007f;"> Big Bold Title </Text>
 ```
 
 ---
@@ -258,15 +269,16 @@ The `Action` block handles all interactive elements. It replaces `<button>`, `<a
 
 **How it compiles — determined by attributes:**
 
-| Attribute Present | Output Element | Use Case |
-|---|---|---|
+| Attribute Present      | Output Element         | Use Case               |
+| ---------------------- | ---------------------- | ---------------------- |
 | `navigate::to="/path"` | `<button role="link">` | Client-side navigation |
-| `href="https://..."` | `<a>` | External link |
-| `on::click="handler"` | `<button>` | Click action |
-| `bind::value="?state"` | `<input>` | Form input (future) |
-| *(none)* | `<button>` | Generic button |
+| `href="https://..."`   | `<a>`                  | External link          |
+| `on::click="handler"`  | `<button>`             | Click action           |
+| `bind::value="?state"` | `<input>`              | Form input (future)    |
+| _(none)_               | `<button>`             | Generic button         |
 
 **Examples:**
+
 ```html
 <!-- Navigation button (uses the built-in router) -->
 <Action navigate::to="/about">About Us</Action>
@@ -285,6 +297,7 @@ The `Action` block handles all interactive elements. It replaces `<button>`, `<a
 The `Collection` block iterates over arrays to produce lists and tables. It replaces `<ul>`, `<ol>`, `<li>`, `<table>`, `<tr>`, and `<td>`.
 
 **Basic usage:**
+
 ```html
 <Collection>
   <Text>Item One</Text>
@@ -294,6 +307,7 @@ The `Collection` block iterates over arrays to produce lists and tables. It repl
 ```
 
 **Output:**
+
 ```html
 <ul>
   <h1>Item One</h1>
@@ -345,9 +359,7 @@ OmniJS passes `class` attributes directly to the final rendered HTML element. Th
 Standard `style` attributes are also passed through:
 
 ```html
-<Text style="color: #ff007f; font-size: 3rem; font-weight: 800;">
-  Styled Text
-</Text>
+<Text style="color: #ff007f; font-size: 3rem; font-weight: 800;"> Styled Text </Text>
 ```
 
 ### CSS Deduplication
@@ -507,6 +519,7 @@ Attach this attribute to any `<Action>` to create a client-side navigation link:
 ```
 
 When clicked:
+
 1. The URL hash updates (e.g., `http://localhost:5500/#/about`)
 2. The internal router signal updates
 3. All `route` containers re-evaluate
@@ -537,8 +550,17 @@ Only the `<Stack>` whose `route` value matches the current URL hash is visible. 
 
 ```html
 <style>
-  .nav { display: flex; gap: 1rem; padding: 1rem; }
-  .nav-link { background: none; border: none; color: #00f0ff; cursor: pointer; }
+  .nav {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .nav-link {
+    background: none;
+    border: none;
+    color: #00f0ff;
+    cursor: pointer;
+  }
 </style>
 
 <Stack>
@@ -601,15 +623,16 @@ After declaring a `<Use>` import, use the component by its `name` as a custom ta
 <Use component="./Footer.omni" name="Footer" />
 
 <Stack>
-  <Header />
+  <header />
   <Text>Page content goes here</Text>
-  <Footer />
+  <footer />
 </Stack>
 ```
 
 ### How Component Loading Works
 
 **Dev Mode:**
+
 1. The parser extracts all `<Use>` tags and records their `src` and `name`.
 2. When the renderer encounters a custom tag (e.g., `<Header />`), it looks up the registered component.
 3. It fetches the `.omni` file via HTTP (`fetch()`).
@@ -621,6 +644,7 @@ The CLI compiler resolves all component imports statically at build time and bun
 ### Component Isolation
 
 Each component has its own:
+
 - **Style scope**: CSS from one component doesn't leak into another (they're injected with unique hashes).
 - **Script scope**: Functions and state from one component don't collide with another.
 
@@ -665,9 +689,7 @@ Trigger animations when an element mounts:
 </Stack>
 
 <!-- Fade in from the left -->
-<Text animate::load="from: { opacity: 0, x: -30, duration: 0.5 }">
-  I slide in from the left
-</Text>
+<Text animate::load="from: { opacity: 0, x: -30, duration: 0.5 }"> I slide in from the left </Text>
 
 <!-- Scale in -->
 <Stack animate::load="from: { opacity: 0, scale: 0.9, duration: 0.6 }">
@@ -684,6 +706,7 @@ from: { property: value, property: value, duration: seconds }
 ```
 
 Any valid GSAP tween property works:
+
 - `opacity` — Transparency (0 to 1)
 - `x`, `y` — Horizontal/vertical offset in pixels
 - `scale` — Size multiplier
@@ -715,7 +738,9 @@ The default and recommended approach. Logic, styles, and template live in one `.
 </script>
 
 <style>
-  .counter { padding: 2rem; }
+  .counter {
+    padding: 2rem;
+  }
 </style>
 
 <Stack class="counter">
@@ -739,14 +764,18 @@ For large components, you can split logic and styles into separate files using `
 ```
 
 **`Counter.js`:**
+
 ```javascript
 let ?count = 0;
 function add() { ?count = ?count + 1; }
 ```
 
 **`Counter.css`:**
+
 ```css
-.counter { padding: 2rem; }
+.counter {
+  padding: 2rem;
+}
 ```
 
 In Dev Mode, the runtime fetches these files asynchronously. In Production Mode, the CLI bundles and minifies them statically.
@@ -818,16 +847,16 @@ Create a `dist/index.html`:
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>My App</title>
-</head>
-<body>
-  <script type="module">
-    import mount from './App.js';
-    mount(document.body);
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>My App</title>
+  </head>
+  <body>
+    <script type="module">
+      import mount from './App.js';
+      mount(document.body);
+    </script>
+  </body>
 </html>
 ```
 
@@ -839,15 +868,15 @@ npx serve dist
 
 ### Dev vs Production Comparison
 
-| Feature | Dev Mode | Production Mode |
-|---|---|---|
-| Build step | None | `omni build` |
+| Feature      | Dev Mode                    | Production Mode           |
+| ------------ | --------------------------- | ------------------------- |
+| Build step   | None                        | `omni build`              |
 | File loading | HTTP fetch per `.omni` file | Single bundled `.js` file |
-| Parser | Runs in browser | Runs at build time only |
-| CSS | Injected at runtime | Inlined in bundle |
-| Minification | No | Yes |
-| Tree-shaking | No | Yes |
-| Bundle size | ~10kb runtime + raw files | Optimized single file |
+| Parser       | Runs in browser             | Runs at build time only   |
+| CSS          | Injected at runtime         | Inlined in bundle         |
+| Minification | No                          | Yes                       |
+| Tree-shaking | No                          | Yes                       |
+| Bundle size  | ~10kb runtime + raw files   | Optimized single file     |
 
 ---
 
@@ -917,17 +946,21 @@ omni-project/
 OmniJS automatically handles several accessibility concerns:
 
 ### Semantic HTML
+
 The core block mapping ensures your output uses proper semantic elements:
+
 - `<main>`, `<section>` instead of generic `<div>`
 - Proper heading hierarchy (`<h1>` through `<h6>`)
 - `<button>` and `<a>` instead of clickable `<div>`s
 
 ### Automatic ARIA Attributes
+
 - `<Action navigate::to="...">` gets `role="link"`
 - Buttons are real `<button>` elements (keyboard accessible by default)
 - Links are real `<a>` elements (screen reader compatible)
 
 ### Manual ARIA
+
 You can add any ARIA attribute manually, and it passes through to the rendered element:
 
 ```html

@@ -44,6 +44,24 @@
     <Text class="text-[var(--color-accent-blue)]">});</Text>
   </Stack>
 
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Global State Management (createStore)</Text>
+  <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
+    For sharing state across multiple components or routes, OmniJS provides the `createStore(initialState, name)` primitive. It returns a deeply reactive Proxy object.
+    When a `name` is provided, the store registers itself globally. All components can then access the store directly in templates and script blocks by its name, with zero imports or boilerplate.
+  </Text>
+
+  <Stack class="bg-zinc-100 dark:bg-white/5 border border-black/5 dark:border-white/10 p-5 rounded-xl font-mono text-xs leading-[1.75] my-3 overflow-x-auto transition-all duration-300">
+    <Text class="text-zinc-500">// 1. Create a global named store (e.g. in a script block or boot file)</Text>
+    <Text class="text-[var(--color-accent-pink)]">const todoStore = createStore({</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  todos: [],</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">  filter: 'all'</Text>
+    <Text class="text-[var(--color-accent-pink)]">}, 'todoStore');</Text>
+    <Text class="text-zinc-500 mt-2">// 2. Use it in any component without importing or passing props</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">function addTodo(text) {</Text>
+    <Text class="text-[var(--color-accent-blue)]">  todoStore.todos.push({ id: Date.now(), text, done: false });</Text>
+    <Text class="text-zinc-800 dark:text-zinc-200">}</Text>
+  </Stack>
+
   <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mt-10 mb-3 transition-colors duration-300">Logging State (log)</Text>
   <Text class="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[0.92rem] mb-4 transition-colors duration-300">
     OmniJS provides a context-aware global `log()` function inside `<script>` blocks. It prefixes console output with `[OmniJS]` and automatically unpacks the current value of any reactive variable passed into it.

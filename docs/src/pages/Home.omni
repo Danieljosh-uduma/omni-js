@@ -152,4 +152,30 @@
       To deploy your application, simply copy the contents of the generated `dist/` directory directly to any static web hosting provider (such as Vercel, Netlify, AWS S3, Cloudflare Pages, or GitHub Pages).
     </Text>
   </Stack>
+
+  <!-- Framework Benchmarks Section -->
+  <Text class="font-heading text-2xl font-bold text-zinc-900 dark:text-white mb-6 border-b border-black/5 dark:border-white/10 pb-2 transition-colors duration-300">Framework Benchmarks</Text>
+  <Stack class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+    <Stack class="bg-gradient-to-br from-pink-500/5 to-purple-500/5 border border-pink-500/10 dark:border-pink-500/20 rounded-2xl p-7 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl">
+      <Text class="font-mono text-xs font-semibold text-[var(--color-accent-pink)] tracking-wider uppercase mb-1">Reactivity Speed</Text>
+      <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white mb-2">1.2M+</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed">
+        Granular signal writes + dependency effect executions per second. No Virtual DOM diffing overhead.
+      </Text>
+    </Stack>
+    <Stack class="bg-gradient-to-br from-purple-500/5 to-blue-500/5 border border-purple-500/10 dark:border-purple-500/20 rounded-2xl p-7 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl">
+      <Text class="font-mono text-xs font-semibold text-[var(--color-accent-purple)] tracking-wider uppercase mb-1">AOT Build Speed</Text>
+      <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white mb-2">~118ms</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed">
+        Ultra-fast AOT template compilation, dependency resolution, and minification via esbuild.
+      </Text>
+    </Stack>
+    <Stack class="bg-gradient-to-br from-blue-500/5 to-teal-500/5 border border-blue-500/10 dark:border-blue-500/20 rounded-2xl p-7 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl">
+      <Text class="font-mono text-xs font-semibold text-[var(--color-accent-blue)] tracking-wider uppercase mb-1">Bundle Size</Text>
+      <Text class="font-heading text-3xl font-extrabold text-zinc-900 dark:text-white mb-2">16.5 KB</Text>
+      <Text class="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed">
+        Full framework size minified (includes reactivity, client-side routing, form handling, resource fetching, and dev overlays).
+      </Text>
+    </Stack>
+  </Stack>
 </Stack>

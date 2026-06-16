@@ -1,71 +1,94 @@
 #!/usr/bin/env node
 
 import esbuild from 'esbuild';
-import { omniEsbuildPlugin } from '../src/plugin.js';
+import { omniEsbuildPlugin, compileStats } from '../src/plugin.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import { performance } from 'perf_hooks';
 
 const args = process.argv.slice(2);
 const command = args[0];
 
 if (command === 'build') {
   const entry = args[1] || 'src/index.omni';
-  const outdirArg = args.find(a => a.startsWith('--outdir=')) || '--outdir=dist';
+  const outdirArg = args.find((a) => a.startsWith('--outdir=')) || '--outdir=dist';
   const outdir = outdirArg.split('=')[1];
 
   console.log(`Building ${entry} to ${outdir}...`);
+  compileStats.reset();
+  const startTime = performance.now();
 
-  esbuild.build({
-    entryPoints: [entry],
-    bundle: true,
-    outdir: outdir,
-    plugins: [omniEsbuildPlugin],
-    format: 'esm',
-    minify: true,
-    treeShaking: true,
-  }).then(() => {
-    console.log('JS Bundle complete!');
-    
-    // Statically prepare index.html and output.css for deployment
-    try {
-      const indexHtmlPath = path.join(process.cwd(), 'index.html');
-      if (fs.existsSync(indexHtmlPath)) {
-        let html = fs.readFileSync(indexHtmlPath, 'utf8');
-        // Remove dev mode scripts
-        html = html.replace(/<script[^>]*src=["'].*?omni-runtime\.js["'][^>]*><\/script>/gi, '');
-        html = html.replace(/<script[^>]*src=["'].*?vendor\.js["'][^>]*><\/script>/gi, '');
-        html = html.replace(/<script[^>]*src=["'].*?fuse-browser\.js["'][^>]*><\/script>/gi, '');
-        
-        // Rewrite the type="text/omni" script to a standard bundle mount
-        html = html.replace(/<script[^>]*type=["']text\/omni["'][^>]*src=["'](.*?)["'][^>]*><\/script>/gi, 
-          `<div id="omni-root"></div>\n  <script type="module">\n    import mount from '/App.js';\n    mount(document.getElementById('omni-root'));\n  </script>`
-        );
-        
-        // Ensure outdir directory exists
-        if (!fs.existsSync(outdir)) {
-          fs.mkdirSync(outdir, { recursive: true });
+  esbuild
+    .build({
+      entryPoints: [entry],
+      bundle: true,
+      outdir: outdir,
+      plugins: [omniEsbuildPlugin],
+      format: 'esm',
+      minify: true,
+      treeShaking: true,
+    })
+    .then(() => {
+      const duration = performance.now() - startTime;
+      console.log(`\n✨ JS Bundle complete in ${duration.toFixed(2)}ms!`);
+      console.log(`📦 Compiled ${compileStats.count} .omni components.`);
+
+      // Statically prepare index.html and output.css for deployment
+      try {
+        const indexHtmlPath = path.join(process.cwd(), 'index.html');
+        if (fs.existsSync(indexHtmlPath)) {
+          let html = fs.readFileSync(indexHtmlPath, 'utf8');
+          // Remove dev mode scripts
+          html = html.replace(/<script[^>]*src=["'].*?omni-runtime\.js["'][^>]*><\/script>/gi, '');
+          html = html.replace(/<script[^>]*src=["'].*?vendor\.js["'][^>]*><\/script>/gi, '');
+          html = html.replace(/<script[^>]*src=["'].*?fuse-browser\.js["'][^>]*><\/script>/gi, '');
+
+          // Rewrite the type="text/omni" script to a standard bundle mount
+          html = html.replace(
+            /<script[^>]*type=["']text\/omni["'][^>]*src=["'](.*?)["'][^>]*><\/script>/gi,
+            `<div id="omni-root"></div>\n  <script type="module">\n    import mount from '/App.js';\n    mount(document.getElementById('omni-root'));\n  </script>`
+          );
+
+          // Ensure outdir directory exists
+          if (!fs.existsSync(outdir)) {
+            fs.mkdirSync(outdir, { recursive: true });
+          }
+
+          fs.writeFileSync(path.join(outdir, 'index.html'), html, 'utf8');
+          console.log('Production index.html generated successfully.');
         }
-        
-        fs.writeFileSync(path.join(outdir, 'index.html'), html, 'utf8');
-        console.log('Production index.html generated successfully.');
+
+        const cssPath = path.join(process.cwd(), 'output.css');
+        if (fs.existsSync(cssPath)) {
+          fs.copyFileSync(cssPath, path.join(outdir, 'output.css'));
+          console.log('Production output.css copied successfully.');
+        }
+
+        // Measure file sizes
+        const jsPath = path.join(process.cwd(), outdir, 'App.js');
+        const cssOutPath = path.join(process.cwd(), outdir, 'output.css');
+
+        console.log('\n📊 Output Assets:');
+        if (fs.existsSync(jsPath)) {
+          const jsSize = fs.statSync(jsPath).size;
+          console.log(`   - App.js:      ${(jsSize / 1024).toFixed(2)} KB (${jsSize} bytes)`);
+        }
+        if (fs.existsSync(cssOutPath)) {
+          const cssSize = fs.statSync(cssOutPath).size;
+          console.log(`   - output.css:  ${(cssSize / 1024).toFixed(2)} KB (${cssSize} bytes)`);
+        }
+
+        console.log(`\n🎉 Build fully optimized and ready for deployment in /${outdir}!`);
+      } catch (e) {
+        console.error('Post-build optimization failed:', e);
       }
-      
-      const cssPath = path.join(process.cwd(), 'output.css');
-      if (fs.existsSync(cssPath)) {
-        fs.copyFileSync(cssPath, path.join(outdir, 'output.css'));
-        console.log('Production output.css copied successfully.');
-      }
-      
-      console.log(`Build fully optimized and ready for deployment in /${outdir}!`);
-    } catch(e) {
-      console.error('Post-build optimization failed:', e);
-    }
-  }).catch((err) => {
-    console.error('Build failed', err);
-    process.exit(1);
-  });
+    })
+    .catch((err) => {
+      console.error('Build failed', err);
+      process.exit(1);
+    });
 } else if (command === 'create') {
   const projectName = args[1];
   if (!projectName) {
@@ -77,7 +100,7 @@ if (command === 'build') {
     console.error(`Directory ${projectName} already exists.`);
     process.exit(1);
   }
-  
+
   try {
     fs.mkdirSync(projectDir, { recursive: true });
     fs.mkdirSync(path.join(projectDir, 'src'), { recursive: true });
@@ -90,7 +113,7 @@ if (command === 'build') {
     let runtimePath;
     try {
       runtimePath = require.resolve('@omni/runtime/dist/omni-runtime.js');
-    } catch (e) {
+    } catch {
       // Fallback for monorepo development
       runtimePath = path.resolve(__dirname, '../../runtime/dist/omni-runtime.js');
     }
@@ -105,26 +128,27 @@ if (command === 'build') {
     // gitignore
     const gitignoreContent = `node_modules\ndist\noutput.css\n`;
     fs.writeFileSync(path.join(projectDir, '.gitignore'), gitignoreContent, 'utf8');
-    
+
     // package.json
     const packageJson = {
       name: projectName,
-      version: "1.0.0",
-      type: "module",
+      version: '1.0.0',
+      type: 'module',
       scripts: {
-        "predev": "node -e \"require('fs').copyFileSync('./node_modules/@omni/runtime/dist/omni-runtime.js', './omni-runtime.js')\"",
-        "dev": "concurrently \"tailwindcss -i ./src/input.css -o ./output.css --watch\" \"npx serve -s .\"",
-        "build": "tailwindcss -i ./src/input.css -o ./output.css --minify && omni build src/App.omni --outdir=dist"
+        predev:
+          "node -e \"require('fs').copyFileSync('./node_modules/@omni/runtime/dist/omni-runtime.js', './omni-runtime.js')\"",
+        dev: 'concurrently "tailwindcss -i ./src/input.css -o ./output.css --watch" "npx serve -s ."',
+        build: 'tailwindcss -i ./src/input.css -o ./output.css --minify && omni build src/App.omni --outdir=dist',
       },
       dependencies: {
-        "@omni/cli": "^1.0.0",
-        "@omni/runtime": "^1.0.0"
+        '@omni/cli': '^1.0.0',
+        '@omni/runtime': '^1.0.0',
       },
       devDependencies: {
-        "@tailwindcss/cli": "^4.3.1",
-        "concurrently": "^10.0.3",
-        "tailwindcss": "^4.3.1"
-      }
+        '@tailwindcss/cli': '^4.3.1',
+        concurrently: '^10.0.3',
+        tailwindcss: '^4.3.1',
+      },
     };
     fs.writeFileSync(path.join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2), 'utf8');
 
@@ -184,7 +208,7 @@ if (command === 'build') {
 
     console.log(`\n🎉 Project "${projectName}" created successfully!`);
     console.log(`To get started running the project:\n  cd ${projectName}\n  npm install\n  npm run dev`);
-  } catch(e) {
+  } catch (e) {
     console.error('Project creation failed:', e);
     process.exit(1);
   }

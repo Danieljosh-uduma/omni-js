@@ -1,5 +1,6 @@
 import { effect } from './reactivity.js';
 import { navigate, getRouterSignal } from './router.js';
+import { OmniError } from './error.js';
 
 // Pre-process template source to convert OmniJS attribute syntax
 // into valid HTML data-* attributes before DOMParser touches it.
@@ -9,7 +10,7 @@ import { navigate, getRouterSignal } from './router.js';
 // This prevents the browser from stripping colons in attribute names.
 function preprocessTemplate(templateSource, components = []) {
   let src = templateSource;
-  
+
   // Case-sensitively rewrite custom component tags to prevent case-insensitivity issues
   // in DOMParser. (e.g., <Header ...> → <omni-component-header omni-name="Header" ...>)
   for (const comp of components) {
@@ -22,7 +23,7 @@ function preprocessTemplate(templateSource, components = []) {
 
   // navigate::to="..." → navigate-to="..."
   src = src.replace(/navigate::to=/g, 'navigate-to=');
-  // bind::prop="..." → bind-prop="..."  
+  // bind::prop="..." → bind-prop="..."
   src = src.replace(/bind::([a-zA-Z0-9_-]+)=/g, 'bind-$1=');
   // on::event="..." → on-event="..."
   src = src.replace(/on::([a-zA-Z0-9_-]+)=/g, 'on-$1=');
@@ -41,8 +42,18 @@ export async function render(ast, context, container) {
   const preprocessed = preprocessTemplate(ast.templateSource, ast.components || []);
   const parser = new DOMParser();
   const doc = parser.parseFromString(preprocessed, 'text/html');
+
+  // Inspect the parsed document for parser errors
+  const parserError = doc.querySelector('parsererror');
+  if (parserError) {
+    throw new OmniError(`HTML parsing error: ${parserError.textContent.trim()}`, {
+      phase: 'Template parsing',
+      templateSource: ast.templateSource,
+    });
+  }
+
   const rootNodes = Array.from(doc.body.childNodes);
-  
+
   for (const node of rootNodes) {
     const el = await walkAndTransform(node, context, { stackDepth: 0, textDepth: 1 }, ast.components || []);
     if (el) container.appendChild(el);
@@ -54,7 +65,7 @@ async function walkAndTransform(node, context, state, components) {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent;
     if (!text.trim()) return null;
-    
+
     // Handle inline interpolation: {?varName} or {varName.prop}
     if (text.includes('{') && text.includes('}')) {
       const span = document.createElement('span');
@@ -62,7 +73,7 @@ async function walkAndTransform(node, context, state, components) {
         let resolved = text.replace(/\{[?]?([a-zA-Z0-9_.]+)\}/g, (match, path) => {
           const parts = path.split('.');
           let val = context;
-          
+
           for (const p of parts) {
             if (val && typeof val === 'object') {
               if (p in val) {
@@ -91,22 +102,22 @@ async function walkAndTransform(node, context, state, components) {
   if (node.nodeType !== Node.ELEMENT_NODE) return null;
 
   const tagName = node.tagName.toLowerCase();
-  
+
   if (tagName === 'portal') {
     const target = node.getAttribute('target') || 'body';
     const targetEl = document.querySelector(target) || document.body;
-    
+
     // Create placeholder to stay in the original DOM hierarchy
     const placeholder = document.createElement('span');
     placeholder.style.display = 'none';
     placeholder.className = 'omni-portal-placeholder';
-    
+
     // Create the wrapper for portal contents
     const portalContent = document.createElement('div');
     portalContent.className = 'omni-portal-content';
-    
+
     // Transfer non-internal attributes from <Portal> to the content wrapper
-    Array.from(node.attributes).forEach(attr => {
+    Array.from(node.attributes).forEach((attr) => {
       if (attr.name !== 'target' && attr.name !== 'as') {
         portalContent.setAttribute(attr.name, attr.value);
       }
@@ -117,13 +128,14 @@ async function walkAndTransform(node, context, state, components) {
       const childEl = await walkAndTransform(child, context, state, components);
       if (childEl) portalContent.appendChild(childEl);
     }
-    
+
     // Append content to the target destination
     targetEl.appendChild(portalContent);
 
     // Sync visibility of the portal content with the placeholder's visibility in the document tree
     const syncVisibility = () => {
-      const isVisible = placeholder.isConnected && (placeholder.offsetParent !== null || placeholder.getBoundingClientRect().width > 0);
+      const isVisible =
+        placeholder.isConnected && (placeholder.offsetParent !== null || placeholder.getBoundingClientRect().width > 0);
       portalContent.style.display = isVisible ? '' : 'none';
     };
 
@@ -151,16 +163,22 @@ async function walkAndTransform(node, context, state, components) {
   let customComp = null;
   if (tagName.startsWith('omni-component-')) {
     const originalName = node.getAttribute('omni-name');
-    customComp = components.find(c => c.name === originalName);
+    customComp = components.find((c) => c.name === originalName);
+    if (!customComp) {
+      throw new OmniError(
+        `Component <${originalName}> is used in template but not registered. Make sure to import it using <Use component="..." name="${originalName}">.`,
+        { componentName: originalName, availableComponents: components.map((c) => c.name) }
+      );
+    }
   }
 
   if (customComp) {
     const wrapper = document.createElement('div');
     wrapper.className = `omni-component-${customComp.name.toLowerCase()}`;
-    
+
     // Extract props
     const props = {};
-    Array.from(node.attributes).forEach(attr => {
+    Array.from(node.attributes).forEach((attr) => {
       if (attr.name === 'omni-name') return;
       let val = attr.value;
       if (val.includes('{') && val.includes('}')) {
@@ -184,7 +202,7 @@ async function walkAndTransform(node, context, state, components) {
           return v !== undefined ? v : match;
         });
       }
-      
+
       if (attr.name.startsWith('on-')) {
         const eventName = attr.name.replace('on-', '');
         props[`on${eventName.charAt(0).toUpperCase() + eventName.slice(1)}`] = context[attr.value];
@@ -204,7 +222,7 @@ async function walkAndTransform(node, context, state, components) {
         if (window.__omni_mount) {
           await window.__omni_mount(source, wrapper, props, context);
         }
-      } catch(e) {
+      } catch (e) {
         console.error(`[OmniJS] Failed to load component <${customComp.name}>`, e);
       }
     }
@@ -228,14 +246,16 @@ async function walkAndTransform(node, context, state, components) {
     } else {
       el = document.createElement('div');
     }
-  } 
-  else if (tagName === 'text') {
+  } else if (tagName === 'text') {
     if (asAttr) {
       el = document.createElement(asAttr);
     } else if (state.collectionType === 'tr') {
       const type = node.getAttribute('type');
       el = document.createElement(type === 'th' ? 'th' : 'td');
-    } else if (state.inCollection && (state.collectionType === 'ul' || state.collectionType === 'ol' || !state.collectionType)) {
+    } else if (
+      state.inCollection &&
+      (state.collectionType === 'ul' || state.collectionType === 'ol' || !state.collectionType)
+    ) {
       el = document.createElement('li');
     } else if (newState.textDepth <= 6) {
       el = document.createElement(`h${newState.textDepth}`);
@@ -243,8 +263,7 @@ async function walkAndTransform(node, context, state, components) {
     } else {
       el = document.createElement('p');
     }
-  }
-  else if (tagName === 'action') {
+  } else if (tagName === 'action') {
     if (asAttr === 'link' || (!asAttr && node.hasAttribute('href'))) {
       el = document.createElement('a');
       if (node.hasAttribute('href')) el.href = node.getAttribute('href');
@@ -259,8 +278,7 @@ async function walkAndTransform(node, context, state, components) {
     } else {
       el = document.createElement('button');
     }
-  }
-  else if (tagName === 'collection') {
+  } else if (tagName === 'collection') {
     if (asAttr) {
       el = document.createElement(asAttr);
     } else {
@@ -274,8 +292,7 @@ async function walkAndTransform(node, context, state, components) {
       newState.collectionType = type;
     }
     newState.inCollection = true;
-  }
-  else if (tagName === 'media') {
+  } else if (tagName === 'media') {
     if (asAttr) {
       el = document.createElement(asAttr);
     } else {
@@ -291,12 +308,12 @@ async function walkAndTransform(node, context, state, components) {
         el = document.createElement('img');
       }
     }
-  }
-  else if (tagName === 'form') {
+  } else if (tagName === 'form') {
     if (asAttr) {
       el = document.createElement(asAttr);
     } else {
-      const isInputControl = node.hasAttribute('bind-value') || node.hasAttribute('placeholder') || node.hasAttribute('type');
+      const isInputControl =
+        node.hasAttribute('bind-value') || node.hasAttribute('placeholder') || node.hasAttribute('type');
       if (!newState.inForm && !isInputControl) {
         el = document.createElement('form');
         newState.inForm = true;
@@ -311,8 +328,7 @@ async function walkAndTransform(node, context, state, components) {
         }
       }
     }
-  }
-  else {
+  } else {
     el = document.createElement(node.tagName);
   }
 
@@ -323,7 +339,7 @@ async function walkAndTransform(node, context, state, components) {
   }
 
   // ── 3. Process All Attributes ──
-  Array.from(node.attributes).forEach(attr => {
+  Array.from(node.attributes).forEach((attr) => {
     const name = attr.name;
     const value = attr.value;
 
@@ -346,7 +362,7 @@ async function walkAndTransform(node, context, state, components) {
       const path = value.replace('?', '');
       const parts = path.split('.');
       const rootSignalName = parts[0];
-      
+
       if (context[rootSignalName]) {
         effect(() => {
           let val = context[rootSignalName];
@@ -363,20 +379,17 @@ async function walkAndTransform(node, context, state, components) {
               val = undefined;
             }
           }
-          
+
           if (prop === 'text') el.textContent = val !== undefined && val !== null ? val : '';
           else if (prop === 'value') {
             if (el.value !== val) {
               el.value = val;
             }
-          }
-          else if (prop === 'show') {
+          } else if (prop === 'show') {
             el.style.display = val ? '' : 'none';
-          }
-          else if (prop === 'hide') {
+          } else if (prop === 'hide') {
             el.style.display = val ? 'none' : '';
-          }
-          else el.setAttribute(prop, val);
+          } else el.setAttribute(prop, val);
         });
 
         // Two-way binding for inputs
@@ -393,6 +406,15 @@ async function walkAndTransform(node, context, state, components) {
             }
           });
         }
+      } else {
+        throw new OmniError(
+          `Cannot bind property "${prop}" to "${value}": "${rootSignalName}" is not defined in the component context.`,
+          {
+            bindingProperty: prop,
+            expression: value,
+            rootVariable: rootSignalName,
+          }
+        );
       }
       return;
     }
@@ -402,11 +424,17 @@ async function walkAndTransform(node, context, state, components) {
       const eventName = name.replace('on-', '');
       if (context[value]) {
         el.addEventListener(eventName, context[value]);
+      } else {
+        throw new OmniError(
+          `Cannot attach event listener "on::${eventName}": handler "${value}" is not defined in the component context.`,
+          {
+            eventName: eventName,
+            handlerName: value,
+          }
+        );
       }
       return;
     }
-
-
 
     // Legacy if:: — skip
     if (name === 'if-condition') return;
@@ -422,12 +450,12 @@ async function walkAndTransform(node, context, state, components) {
 
     if (context[signalName]) {
       const templateChildren = Array.from(node.childNodes);
-      
+
       effect(() => {
         // Simple list re-render
         el.innerHTML = '';
         const array = context[signalName].value || [];
-        
+
         array.forEach(async (item) => {
           const childContext = { ...context, [asName]: item };
           for (const child of templateChildren) {
@@ -437,6 +465,14 @@ async function walkAndTransform(node, context, state, components) {
           }
         });
       });
+    } else {
+      throw new OmniError(
+        `Cannot render collection: data source signal "${signalName}" is not defined in the component context.`,
+        {
+          signalName: signalName,
+          asName: asName,
+        }
+      );
     }
   } else {
     for (const child of Array.from(node.childNodes)) {
@@ -449,11 +485,10 @@ async function walkAndTransform(node, context, state, components) {
   if (routePath !== null) {
     const routerSignal = getRouterSignal();
     el.style.display = 'none';
-    
+
     effect(() => {
       const current = routerSignal.value;
-      const isMatch = (routePath === current) || 
-                      (routePath === '/' && (current === '/' || current === ''));
+      const isMatch = routePath === current || (routePath === '/' && (current === '/' || current === ''));
       el.style.display = isMatch ? '' : 'none';
     });
   }

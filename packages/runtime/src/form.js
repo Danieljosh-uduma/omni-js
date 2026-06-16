@@ -3,7 +3,7 @@ import { createSignal } from './reactivity.js';
 export function useForm({ initialValues = {}, validate = () => ({}) }) {
   // Initialize errors with empty strings for each key in initialValues
   const initialErrors = {};
-  Object.keys(initialValues).forEach(key => {
+  Object.keys(initialValues).forEach((key) => {
     initialErrors[key] = '';
   });
 
@@ -18,22 +18,22 @@ export function useForm({ initialValues = {}, validate = () => ({}) }) {
   }
 
   function handleSubmit(onSubmit) {
-    return async function(e) {
+    return async function (e) {
       if (e && typeof e.preventDefault === 'function') {
         e.preventDefault();
       }
 
       const rawValues = values.value;
       const validationErrors = validate(rawValues) || {};
-      
+
       // Merge with initial empty errors to ensure keys are present and clean
       const finalErrors = { ...initialErrors };
-      Object.keys(validationErrors).forEach(key => {
+      Object.keys(validationErrors).forEach((key) => {
         finalErrors[key] = validationErrors[key] || '';
       });
       errors.value = finalErrors;
 
-      const hasErrors = Object.keys(validationErrors).some(key => validationErrors[key]);
+      const hasErrors = Object.keys(validationErrors).some((key) => validationErrors[key]);
       if (!hasErrors) {
         submitting.value = true;
         try {
@@ -52,6 +52,6 @@ export function useForm({ initialValues = {}, validate = () => ({}) }) {
     errors,
     submitting,
     handleSubmit,
-    reset
+    reset,
   };
 }
