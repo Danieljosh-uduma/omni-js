@@ -1,7 +1,7 @@
 import { tokenize } from "./tokenizer.js";
 import { OmniError } from "./error.js";
 
-const ALLOWED_TAGS = new Set(["stack", "text", "collection", "action", "media", "portal"]);
+const ALLOWED_TAGS = new Set(["stack", "form", "text", "collection", "action", "media", "portal"]);
 
 function parse(tokens) {
     let current = 0;
@@ -23,12 +23,17 @@ function parse(tokens) {
                     throw new OmniError(1005, `Invalid element tag '<${nextToken.value}>'. This framework only supports the following native components: ${Array.from(ALLOWED_TAGS).join(', ')}.`, nextToken.line);
                 }
 
+                let currentParent = stack[stack - 1]
+                let siblingIndex = currentParent ? currentParent.children.length : 0
                 let element = {
                     type: "Element",
                     tagName: nextToken.value,
                     attributes: {},
                     children: [],
-                    line: nextToken.line
+                    line: nextToken.line,
+                    depth: stack.length,
+                    index: siblingIndex,
+                    totalSiblings: 1
                 }
 
                 // Rule Check: Enforce a single parent root element constraint
@@ -88,6 +93,13 @@ function parse(tokens) {
                     throw new OmniError(1003, `Mismatched closing tag. Expected </${FinalElement.tagName}> but found </${tagNameToken.value}> at line ${token.line}`, token.line);
                 }
 
+                const totalChildrenCount = FinalElement.children.length;
+                FinalElement.children.forEach(child => {
+                    if (child.type === "Element") {
+                        child.totalSiblings = totalChildrenCount;
+                    }
+                });
+
                 // check if the stack is empty
                 if (stack.length === 0) {
                     ast = FinalElement
@@ -104,7 +116,6 @@ function parse(tokens) {
                 }
                 continue
             }
-
         }
 
         // checks for text
@@ -134,10 +145,25 @@ function parse(tokens) {
     return ast
 }
 
+const text = `
+    <stack>
+        <stack>
+            <stack></stack>
+            <stack>
+                <stack></stack>
+                <text>
+                    <text></text>
+                </text>
+            </stack>
+        </stack>
+    </stack>
+`
 try {
     // console.log(parse(TOKENS))
-    console.log(parse(tokenize('<text name="submit"> Hello world</text>')))
+    console.log(parse(tokenize(text)))
 } catch (error) {
     console.log("here")
     console.log(error)
 }
+
+export { parse }
