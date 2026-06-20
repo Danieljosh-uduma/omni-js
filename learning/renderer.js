@@ -9,6 +9,7 @@ import {
     resolveTextTag,
 } from "./resolver.js"
 
+
 function renderNode(node) {
     if (!node) return null;
 

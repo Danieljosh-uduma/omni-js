@@ -25,22 +25,23 @@ function resolveStackTag(node) {
 
         if (!ALLOWED_STACK_OVERRIDES.has(targetTag)) {
             throw new OmniError(1006, `Invalid layout override '<stack as="${node.attributes.as}">'. Allowed elements are: ${Array.from(ALLOWED_STACK_OVERRIDES).join(', ')}.`, node.line);
-        } else if (node.depth === 0) {
-            targetTag = "main"
-        } else if (node.depth === 1) {
-            if (node.totalSiblings >= 3) {
-                if (node.index === 0) return "header"
-                if (node.index === node.totalSiblings - 1) return "footer" 
-            }
-            return "section"
-        }
-        if (tag === "main") {
+        } 
+        if (targetTag === "main") {
             if (pageLayoutState.hasMain) {
                 throw new OmniError(1007, `Layout conflict: Only one '<main>' root element is permitted per document structure.`, node.line);
             }
             pageLayoutState.hasMain = true;
         }
         return targetTag;
+    }
+    if (node.depth === 0) {
+        return "main"
+    } else if (node.depth === 1) {
+        if (node.totalSiblings >= 3) {
+            if (node.index === 0) return "header"
+            if (node.index === node.totalSiblings - 1) return "footer" 
+        }
+        return "section"
     }
 
     return "div"
@@ -55,6 +56,9 @@ function resolveTextTag(node) {
             throw new OmniError(1006, `Invalid typographic override '<text as="${node.attributes.as}">'. Allowed tags are: ${Array.from(ALLOWED_TEXT_OVERRIDES).join(', ')}.`, node.line);
         }
         return targetTag;
+    }
+    if (node.parentNode === "text") {
+        return "span"
     }
 
     return "p"

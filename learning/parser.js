@@ -33,7 +33,8 @@ function parse(tokens) {
                     line: nextToken.line,
                     depth: stack.length,
                     index: siblingIndex,
-                    totalSiblings: 1
+                    totalSiblings: 1,
+                    parentNode: currentParent || null
                 }
 
                 // Rule Check: Enforce a single parent root element constraint
@@ -94,9 +95,12 @@ function parse(tokens) {
                 }
 
                 const totalChildrenCount = FinalElement.children.length;
+                let index = 0
                 FinalElement.children.forEach(child => {
                     if (child.type === "Element") {
                         child.totalSiblings = totalChildrenCount;
+                        child.parentNode = FinalElement.tagName
+                        child.index = index++
                     }
                 });
 
@@ -145,25 +149,23 @@ function parse(tokens) {
     return ast
 }
 
-const text = `
-    <stack>
-        <stack>
-            <stack></stack>
-            <stack>
-                <stack></stack>
-                <text>
-                    <text></text>
-                </text>
-            </stack>
-        </stack>
-    </stack>
-`
-try {
-    // console.log(parse(TOKENS))
-    console.log(parse(tokenize(text)))
-} catch (error) {
-    console.log("here")
-    console.log(error)
-}
+// const text = `
+//     <stack>
+//         <stack>
+//             <stack></stack>
+//             <stack>
+//                 <stack></stack>
+//                 <text>
+//                     <text></text>
+//                 </text>
+//             </stack>
+//         </stack>
+//     </stack>
+// `
+// try {
+//     console.log(parse(tokenize(text)))
+// } catch (error) {
+//     console.log(error)
+// }
 
 export { parse }
