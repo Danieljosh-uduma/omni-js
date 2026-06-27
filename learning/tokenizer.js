@@ -62,7 +62,7 @@ function tokenize(code) {
                 cursor++
             }
             if (cursor === code.length) {
-                throw new OmniError(2001, "Unterminated string literal. Expected a closing double quote.", line);
+                throw new OmniError(2002, "Unterminated string literal. Expected a closing double quote.", line);
             }
             tokens.push({ type: "VALUE", value: value, line: line })
             cursor++
@@ -76,16 +76,6 @@ function tokenize(code) {
 
     return tokens
 }
-const text = `
-    <section>
-        <div>I am a friend of your parent</div>
-        <p>be cool bro?</p>
-        <button type="submit">Click me</button>
-        <div>
-            <p class="text-red-500>hi <span>Lol</span></p>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod.</p>
-        </div>
-    </section>
-`
+
 
 export { tokenize }
