@@ -1,0 +1,47 @@
+<script>
+    state name = "josh"
+</script>
+
+<style>
+    .roster-table { width: 100%; }
+    .roster-table th { background-color: #f0f0f0; }
+</style>
+
+<stack>
+    <stack class="flex justify-between items-center p-4 bg-slate-800 text-white">
+        <text as="h1" class="text-2xl font-bold">Omni Framework Demo</text>
+        <action href="/about" class="underline hover:text-slate-300">About</action>
+    </stack>
+    <stack class="p-6">
+        <text as="h2" class="text-xl font-semibold mb-3">Team Roster</text>
+        <collection as="table" class="roster-table border border-slate-300">
+            <collection as="thead">
+                <collection>
+                    <collection as="th">Name</collection>
+                    <collection as="th">Role</collection>
+                </collection>
+            </collection>
+            <collection as="tbody">
+                <collection>
+                    <collection>Joshua</collection>
+                    <collection>Framework Author</collection>
+                </collection>
+                <collection>
+                    <collection>Ada</collection>
+                    <collection>Contributor</collection>
+                </collection>
+            </collection>
+        </collection>
+        <media src="team-photo.jpg" alt="The team" class="mt-4 rounded-lg shadow"></media>
+    </stack>
+    <stack as="section" class="p-6 bg-slate-100">
+        <text as="h2" class="text-xl font-semibold mb-3">Contact Us</text>
+        <form action="/submit" method="post" class="flex flex-col gap-3 max-w-sm">
+            <form as="label" class="text-sm font-medium">Your email</form>
+            <form as="email" name="email" placeholder="you@example.com" class="border rounded px-3 py-2"></form>
+            <form as="label" class="text-sm font-medium">Subscribe to updates</form>
+            <form as="checkbox" name="subscribe" class="w-4 h-4"></form>
+            <form as="button" class="bg-slate-800 text-white rounded px-4 py-2 hover:bg-slate-700">Send</form>
+        </form>
+    </stack>
+</stack>

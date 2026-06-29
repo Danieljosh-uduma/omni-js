@@ -1,24 +1,20 @@
-import { mount } from "../learning/renderer.js"
-import { tokenize } from "../learning/tokenizer.js"
-import { parse } from "../learning/parser.js"
 
+import { runOmniUrl, OmniError } from "../learning/index.browser.js";
 
-const root = document.getElementById("main")
+const statusEl = document.getElementById("status");
+const target = document.getElementById("app");
 
-const text = `
-    <stack>
-        <stack>
-            <text as="h1">Hello world</text>
-            <action href="he">count</action>
-        </stack>
-        <stack></stack>
-        <stack></stack>
-
-        <collection type="ordered">
-            <collection><Text>First Item</Text></collection>
-            <collection><Text>Second Item</Text></collection>
-        </collection>
-    </stack>
-`
-
-mount(parse(tokenize(text)), root)
+try {
+    const ast = await runOmniUrl("./demo.omni", target);
+    statusEl.textContent = "✅ Mounted demo.omni successfully. See rendered output below.";
+    statusEl.className = "ok";
+    console.log("Parsed AST:", ast);
+} catch (err) {
+    statusEl.className = "error";
+    if (err instanceof OmniError) {
+        statusEl.textContent = `❌ OmniError [${err.code}]: ${err.message}`;
+    } else {
+        statusEl.textContent = `❌ ${err.message}`;
+    }
+    console.error(err);
+}
